@@ -1,0 +1,26 @@
+[
+  {
+    "url": "assets/clouds/charm.pcw",
+    "label": "CERN CHARM facility",
+    "count": 159107,
+    "pointSize": 0.057,
+    "radius": 8.145067726885504,
+    "sizeMB": 2.4
+  },
+  {
+    "url": "assets/clouds/ba6.pcw",
+    "label": "CERN BA6 (SPS)",
+    "count": 280000,
+    "pointSize": 0.106,
+    "radius": 15.192907878895577,
+    "sizeMB": 4.2
+  },
+  {
+    "url": "assets/clouds/iilab.pcw",
+    "label": "iiLab indoor loop",
+    "count": 320000,
+    "pointSize": 0.12,
+    "radius": 17.119783551932123,
+    "sizeMB": 4.8
+  }
+]

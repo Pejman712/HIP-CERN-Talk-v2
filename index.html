@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Robot Mapping &amp; Navigation at CERN</title>
+<meta name="description" content="Robot Mapping and Navigation for Inspection Tasks in CERN Facilities — Pejman Habibiroudkenar, Helsinki Institute of Physics.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A4%96%3C/text%3E%3C/svg%3E">
+<!-- social share (Open Graph / Twitter) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Robot Mapping and Navigation for Inspection Tasks in CERN Facilities">
+<meta property="og:description" content="Autonomous and teleoperated mobile robots that inspect, survey and map CERN's accelerator facilities — reducing radiation exposure and boosting machine availability.">
+<meta property="og:image" content="assets/video/poster-sps.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Robot Mapping and Navigation at CERN">
+<meta name="twitter:description" content="Robots that inspect, survey and map CERN's accelerator facilities — reducing radiation exposure and boosting availability.">
+<meta name="twitter:image" content="assets/video/poster-sps.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ffffff;
+  --surface:#f6f7f7;
+  --surface-2:#eef0f0;
+  --line:#e3e6e6;
+  --text:#161a1a;
+  --muted:#5c6666;
+  --accent:#0f8a8a;
+  --accent-dark:#0b6a6a;
+  --accent-soft:#e2f2f2;
+  --card:#0f8a8a;
+  --card-text:#ffffff;
+  --card-num:rgba(255,255,255,.55);
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06);
+  --frame:#161616;
+  --mat:#ffffff;
+  --maxw:1080px;
+  --radius:14px;
+  --fs:1;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1211;
+    --surface:#161b1a;
+    --surface-2:#1d2423;
+    --line:#26302e;
+    --text:#eef2f1;
+    --muted:#9aa5a3;
+    --accent:#3fb6b6;
+    --accent-dark:#2f9d9d;
+    --accent-soft:#12302f;
+    --card:#0f8a8a;
+    --card-text:#ffffff;
+    --card-num:rgba(255,255,255,.55);
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.5);
+    --frame:#0c0c0c;
+    --mat:#e9edec;
+  }
+}
+/* explicit dark (Theme → Dark), independent of OS setting */
+:root[data-theme="dark"]{
+  --bg:#0e1211;
+  --surface:#161b1a;
+  --surface-2:#1d2423;
+  --line:#26302e;
+  --text:#eef2f1;
+  --muted:#9aa5a3;
+  --accent:#3fb6b6;
+  --accent-dark:#2f9d9d;
+  --accent-soft:#12302f;
+  --card:#0f8a8a;
+  --card-text:#ffffff;
+  --card-num:rgba(255,255,255,.55);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.5);
+  --frame:#0c0c0c;
+  --mat:#e9edec;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  font-size:calc(17px * var(--fs));line-height:1.6;letter-spacing:-0.006em;
+  -webkit-font-smoothing:antialiased;
+}
+img{max-width:100%;display:block}
+a{color:var(--accent-dark);text-decoration:none}
+
+/* ---------- top nav ---------- */
+.nav{
+  position:sticky;top:0;z-index:50;
+  background:color-mix(in srgb,var(--bg) 86%,transparent);
+  backdrop-filter:saturate(180%) blur(12px);
+  border-bottom:1px solid var(--line);
+}
+.nav-inner{
+  max-width:var(--maxw);margin:0 auto;padding:12px 24px;
+  display:flex;align-items:center;gap:20px;justify-content:space-between;
+}
+.brand{font-weight:700;font-size:15px;letter-spacing:-0.01em;white-space:nowrap}
+.brand span{color:var(--accent)}
+.nav-links{display:flex;gap:22px;flex-wrap:wrap}
+.nav-links a{color:var(--muted);font-size:15px;font-weight:500;transition:color .15s}
+.nav-links a:hover{color:var(--accent)}
+@media(max-width:720px){.nav-links{display:none}}
+
+/* ---------- layout ---------- */
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+section{padding:64px 0;border-top:1px solid var(--line)}
+section:first-of-type{border-top:none}
+.kicker{
+  display:inline-block;font-size:13.5px;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--accent);margin:0 0 14px;
+}
+h1{font-weight:800;letter-spacing:-0.03em;line-height:1.05;margin:0}
+h2{font-weight:800;letter-spacing:-0.02em;line-height:1.1;font-size:clamp(26px,4vw,38px);margin:0 0 8px}
+h3{font-weight:700;letter-spacing:-0.01em;font-size:20px;margin:0 0 6px}
+.lead{font-size:19px;color:var(--muted);max-width:60ch;margin:0 0 26px}
+p{margin:0 0 16px}
+ul.bul{list-style:none;padding:0;margin:0 0 26px;max-width:70ch}
+ul.bul li{position:relative;padding-left:26px;margin:0 0 14px;color:var(--text)}
+ul.bul li::before{
+  content:"";position:absolute;left:2px;top:11px;width:7px;height:7px;
+  background:var(--accent);border-radius:2px;transform:rotate(45deg)
+}
+ul.bul li b,strong{font-weight:700}
+.muted{color:var(--muted)}
+.note{font-size:15.5px;color:var(--muted);margin-top:10px}
+
+/* ---------- hero ---------- */
+.hero{
+  padding:96px 0 84px;border-top:none;
+  background:
+    radial-gradient(60% 80% at 78% 0%,var(--accent-soft),transparent 60%);
+}
+.hero h1{font-size:clamp(34px,6vw,60px)}
+.hero .sub{margin-top:24px;font-size:20px;color:var(--muted);max-width:56ch}
+.author{margin-top:34px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.avatar{
+  width:46px;height:46px;border-radius:50%;flex:none;
+  background:linear-gradient(135deg,var(--accent),var(--accent-dark));
+  color:#fff;display:grid;place-items:center;font-weight:700;font-size:17px
+}
+.author .name{font-weight:700}
+.author .aff{font-size:15px;color:var(--muted)}
+.tags{margin-top:30px;display:flex;gap:10px;flex-wrap:wrap}
+.tag{
+  font-size:14px;font-weight:600;color:var(--accent-dark);
+  background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);
+  padding:6px 12px;border-radius:999px
+}
+
+/* ---------- divider (section title slides) ---------- */
+.divider{
+  text-align:center;padding:96px 0;
+  background:linear-gradient(180deg,var(--surface),var(--bg));
+}
+.divider h2{font-size:clamp(30px,5.5vw,50px)}
+.divider .step{font-size:14px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+
+/* ---------- cards (numbered) ---------- */
+.cards{display:grid;gap:16px;margin:8px 0 8px}
+.cards.c3{grid-template-columns:repeat(3,1fr)}
+.cards.c4{grid-template-columns:repeat(4,1fr)}
+.cards.c5{grid-template-columns:repeat(5,1fr)}
+.card{
+  background:var(--card);color:var(--card-text);border-radius:12px;
+  padding:20px 18px 22px;min-height:120px;display:flex;flex-direction:column;
+}
+.card .num{font-size:34px;font-weight:800;line-height:1;color:var(--card-num);margin-bottom:14px}
+.card .ct{font-weight:600;font-size:17px;line-height:1.35}
+@media(max-width:860px){.cards.c4,.cards.c5{grid-template-columns:repeat(2,1fr)}.cards.c3{grid-template-columns:1fr}}
+@media(max-width:520px){.cards.c4,.cards.c5,.cards.c3{grid-template-columns:1fr}}
+
+/* option cards (quiz slide) */
+.opts{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:760px}
+.opt{
+  border:1px solid var(--line);border-radius:12px;padding:18px 20px;background:var(--surface);
+  display:flex;align-items:center;gap:14px;font-weight:600
+}
+.opt .k{width:30px;height:30px;flex:none;border-radius:8px;background:var(--surface-2);
+  display:grid;place-items:center;font-weight:700;color:var(--muted)}
+.opt.correct{border-color:var(--accent);background:var(--accent-soft)}
+.opt.correct .k{background:var(--accent);color:#fff}
+@media(max-width:520px){.opts{grid-template-columns:1fr}}
+
+/* ---------- figures ---------- */
+.figs{display:grid;gap:16px;margin:22px 0 4px}
+.figs.g2{grid-template-columns:repeat(2,1fr)}
+.figs.g3{grid-template-columns:repeat(3,1fr)}
+.figs.g4{grid-template-columns:repeat(4,1fr)}
+figure{margin:0}
+figure img{
+  width:100%;border-radius:10px;border:1px solid var(--line);background:var(--surface);
+}
+figure.contain img{object-fit:contain}
+figcaption{font-size:14.5px;color:var(--muted);margin-top:8px;line-height:1.4}
+.gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:22px 0}
+.gallery img{aspect-ratio:4/3;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+@media(max-width:860px){.figs.g3,.figs.g4{grid-template-columns:repeat(2,1fr)}.gallery{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:520px){.figs.g2,.figs.g3,.figs.g4{grid-template-columns:1fr}.gallery{grid-template-columns:repeat(2,1fr)}}
+
+/* split: text + media side by side */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start}
+.split.media-wide{grid-template-columns:5fr 6fr}
+@media(max-width:840px){.split,.split.media-wide{grid-template-columns:1fr;gap:24px}}
+.stack{display:grid;gap:16px}
+
+.metric{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;margin:6px 0 22px}
+.metric .big{font-size:30px;font-weight:800;color:var(--accent);letter-spacing:-0.02em}
+
+/* logos row */
+.logos{display:flex;gap:26px;align-items:center;flex-wrap:wrap;margin-bottom:26px}
+.logos img{height:38px;width:auto;border:none;background:none;opacity:.9}
+
+/* photo figures with a uniform, gentle crop (no over-zoom) */
+.figs .photo img{aspect-ratio:16/10;object-fit:cover}
+
+/* masonry gallery — preserves each picture's own shape, tiles into a block */
+.masonry{columns:5 165px;column-gap:12px}
+.masonry img{width:100%;margin:0 0 12px;border-radius:10px;border:1px solid var(--line);
+  break-inside:avoid;transition:transform .35s ease,box-shadow .35s ease}
+.masonry img:hover{transform:scale(1.03);box-shadow:var(--shadow);position:relative;z-index:2}
+@media(max-width:860px){.masonry{columns:3 130px}}
+@media(max-width:520px){.masonry{columns:2 120px}}
+
+/* gallery-wall collage — framed photos, varied sizes, newer robots bigger */
+.collage{position:relative;width:100%;aspect-ratio:5/4}
+.collage figure{position:absolute;margin:0;box-sizing:border-box;overflow:hidden;
+  border:5px solid var(--frame);border-radius:2px;
+  box-shadow:0 14px 30px rgba(0,0,0,.22);
+  transition:transform .35s ease,box-shadow .35s ease}
+.collage figure:hover{transform:translateY(-4px) scale(1.015);box-shadow:0 22px 46px rgba(0,0,0,.32);z-index:5}
+.collage img{width:100%;height:100%;object-fit:cover;display:block}
+.collage figcaption{position:absolute;left:0;right:0;bottom:0;padding:18px 10px 8px;
+  color:#fff;font-size:13px;font-weight:600;letter-spacing:-0.01em;
+  background:linear-gradient(transparent,rgba(0,0,0,.78));
+  opacity:0;transition:opacity .3s ease}
+.collage figure:hover figcaption{opacity:1}
+/* positions (%) — a staggered salon wall, tops rising to the right */
+.f1{left:0;top:17.7%;width:22.2%;height:19%}
+.f2{left:23.2%;top:15.2%;width:13.1%;height:24.1%}
+.f3{left:38.4%;top:3.8%;width:18.2%;height:29.1%}
+.f4{left:57.6%;top:0;width:42.4%;height:63.3%}
+.f5{left:0;top:43%;width:36.4%;height:57%}
+.f6{left:38.4%;top:35.4%;width:18.2%;height:25.3%}
+.f7{left:39.4%;top:64.6%;width:26.3%;height:35.4%}
+.f8{left:67.7%;top:64.6%;width:32.3%;height:31.6%}
+/* wide 5-frame variant (Deployed Systems) */
+.collage.wall-wide{aspect-ratio:5/2}
+.d1{left:0;top:16%;width:26%;height:50%}
+.d2{left:0;top:70%;width:26%;height:30%}
+.d3{left:28%;top:0;width:30%;height:74%}
+.d4{left:28%;top:78%;width:30%;height:22%}
+.d5{left:60%;top:8%;width:40%;height:86%}
+@media(max-width:640px){
+  .collage{aspect-ratio:auto;display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .collage figure{position:static !important;left:auto;top:auto;width:auto !important;height:auto !important;aspect-ratio:4/3}
+  .collage figcaption{opacity:1}
+}
+
+/* framed gallery wall — same salon-wall style as .collage, but each photo
+   keeps its own shape (no cropping); tiles via CSS columns (masonry) */
+.wall{columns:4 210px;column-gap:14px}
+.wall.wide{columns:2 300px}
+.wall figure{position:relative;margin:0 0 14px;break-inside:avoid;box-sizing:border-box;
+  border:5px solid var(--frame);border-radius:2px;overflow:hidden;
+  box-shadow:0 14px 30px rgba(0,0,0,.22);
+  transition:transform .35s ease,box-shadow .35s ease}
+.wall figure:hover{transform:translateY(-4px) scale(1.012);box-shadow:0 22px 46px rgba(0,0,0,.32);position:relative;z-index:5}
+.wall img{width:100%;height:auto;display:block;border:none;border-radius:0}
+.wall figcaption{position:absolute;left:0;right:0;bottom:0;padding:24px 10px 8px;
+  color:#fff;font-size:13px;font-weight:600;letter-spacing:-0.01em;
+  background:linear-gradient(transparent,rgba(0,0,0,.78));
+  opacity:0;transition:opacity .3s ease}
+.wall figure:hover figcaption{opacity:1}
+@media(max-width:860px){.wall{columns:3 160px}.wall.wide{columns:2 240px}}
+@media(max-width:520px){.wall{columns:2 130px}.wall.wide{columns:1}}
+
+/* video wall — grid of framed clips, one feature on top */
+.vwall{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin:22px 0 4px}
+.vwall figure{margin:0}
+.vwall figure.feature{grid-column:1 / -1}
+.vwall .video{border-radius:12px}
+.vwall video{width:100%;display:block}
+.vwall figcaption{font-size:15px;color:var(--muted);margin-top:9px;line-height:1.4;font-weight:600}
+@media(max-width:640px){.vwall{grid-template-columns:1fr}.vwall figure.feature{grid-column:auto}}
+
+/* click-to-enlarge lightbox */
+.zoomable{cursor:zoom-in}
+.lb{position:fixed;inset:0;z-index:100;background:rgba(9,12,12,.93);
+  display:flex;align-items:center;justify-content:center;padding:24px;
+  opacity:0;pointer-events:none;transition:opacity .25s ease;cursor:zoom-out}
+.lb.open{opacity:1;pointer-events:auto}
+.lb img{max-width:95vw;max-height:92vh;border-radius:8px;box-shadow:0 24px 70px rgba(0,0,0,.55);
+  transform:scale(.94);transition:transform .28s cubic-bezier(.2,.7,.2,1);background:#fff}
+.lb.open img{transform:scale(1)}
+.lb-close{position:fixed;top:16px;right:22px;width:40px;height:40px;border-radius:50%;
+  display:grid;place-items:center;background:rgba(255,255,255,.12);color:#fff;font-size:22px;
+  line-height:1;cursor:pointer;transition:background .2s}
+.lb-close:hover{background:rgba(255,255,255,.24)}
+
+/* video */
+.video{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#000}
+.video video{width:100%;display:block}
+.badge{position:absolute;top:12px;left:12px;z-index:2;background:rgba(15,138,138,.94);color:#fff;
+  font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:5px 11px;border-radius:999px;
+  display:inline-flex;align-items:center;gap:7px}
+.badge::before{content:"";width:7px;height:7px;border-radius:50%;background:#fff;animation:blink 1.6s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* interactive maps embed */
+.mapscta{margin-top:26px;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--surface)}
+.mapsframe{position:relative;width:100%;aspect-ratio:16/9;background:var(--surface-2)}
+.mapsframe iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.mapsbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:16px 20px}
+.mapsbar .mt{font-weight:700}
+.mapsbar .ms{font-size:15px;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;gap:9px;background:var(--accent);color:#fff;font-weight:600;
+  padding:11px 18px;border-radius:10px;white-space:nowrap;transition:background .2s,transform .2s,box-shadow .2s}
+.btn:hover{background:var(--accent-dark);transform:translateY(-1px);box-shadow:var(--shadow)}
+.btn svg{width:16px;height:16px}
+
+/* interactive point-cloud viewer (ported from pejman712.github.io/PJMrobotics) */
+.mapscta .viewer{border:0;border-radius:0}
+.viewer{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
+  background:radial-gradient(130% 130% at 50% 0%, #0c1430, #04060d 70%)}
+.viewer-stage{position:relative;width:100%;height:60vh;min-height:360px;max-height:620px}
+#cloud-canvas{display:block;width:100%;height:100%;cursor:grab}
+#cloud-canvas:active{cursor:grabbing}
+.viewer-overlay{position:absolute;inset:0;display:grid;place-items:center;color:#aab4d0;
+  font-size:.95rem;letter-spacing:.02em;background:rgba(4,6,13,.4);pointer-events:none}
+.viewer-hud{position:absolute;top:14px;left:16px;padding:6px 12px;background:rgba(4,6,13,.6);
+  border:1px solid rgba(255,255,255,.16);border-radius:999px;color:#fff;font-size:.82rem;font-weight:600;pointer-events:none}
+.viewer-hint{position:absolute;bottom:12px;right:14px;color:#aab4d0;font-size:.75rem;letter-spacing:.03em;pointer-events:none}
+.viewer-bar{display:flex;flex-wrap:wrap;gap:8px;padding:12px 14px;border-top:1px solid rgba(255,255,255,.12);background:rgba(9,13,28,.6)}
+.viewer-tab{font:inherit;font-size:.86rem;font-weight:600;color:#aab4d0;background:transparent;
+  border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:8px 16px;cursor:pointer;
+  transition:color .2s,border-color .2s,background .2s}
+.viewer-tab:hover{color:#fff;border-color:var(--accent)}
+.viewer-tab.active{color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent-dark));border-color:transparent}
+
+/* scroll-reveal animations */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1 !important;transform:none !important;transition:none}
+  .badge::before{animation:none}}
+
+/* card & figure hover polish */
+.card{transition:transform .3s ease,box-shadow .3s ease}
+.card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+figure img{transition:transform .45s ease,box-shadow .3s ease}
+.figs figure:hover img{transform:scale(1.015);box-shadow:var(--shadow)}
+.opt{transition:transform .25s ease,border-color .25s ease}
+.opt:hover{transform:translateY(-2px);border-color:var(--accent)}
+
+/* hero load-in */
+@keyframes floatIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.hero .kicker,.hero h1,.hero .sub,.hero .author,.hero .tags{animation:floatIn .85s both}
+.hero h1{animation-delay:.05s}.hero .sub{animation-delay:.16s}
+.hero .author{animation-delay:.27s}.hero .tags{animation-delay:.38s}
+.tag{transition:transform .2s ease,background .2s ease}
+.tag:hover{transform:translateY(-2px)}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--line);padding:56px 0 72px;color:var(--muted);font-size:15px}
+footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+.up{color:var(--accent);font-weight:600}
+
+.appendix-intro{background:var(--surface);border-top:1px solid var(--line)}
+
+/* ---------- scroll progress bar ---------- */
+.progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:60;
+  background:linear-gradient(90deg,var(--accent),var(--accent-dark));
+  box-shadow:0 0 8px color-mix(in srgb,var(--accent) 60%,transparent);transition:width .08s linear}
+
+/* ---------- active nav link ---------- */
+.nav-links a.active{color:var(--accent)}
+.nav-links a.active::after{content:"";display:block;height:2px;margin-top:3px;border-radius:2px;background:var(--accent)}
+
+/* ---------- mobile menu ---------- */
+.nav-inner{position:relative}
+.nav-toggle{display:none;background:var(--surface);border:1px solid var(--line);border-radius:9px;
+  color:var(--text);font-size:18px;line-height:1;padding:7px 11px;cursor:pointer}
+.nav-toggle:hover{border-color:var(--accent);color:var(--accent)}
+@media(max-width:720px){
+  .nav-toggle{display:block}
+  .nav-links{position:absolute;top:calc(100% + 1px);left:0;right:0;display:none;flex-direction:column;gap:0;
+    background:var(--bg);border-bottom:1px solid var(--line);box-shadow:var(--shadow);padding:6px 24px 12px}
+  .nav-links.open{display:flex}
+  .nav-links a{padding:12px 2px;font-size:15px;border-bottom:1px solid var(--line)}
+  .nav-links a:last-child{border-bottom:none}
+  .nav-links a.active::after{display:none}
+}
+
+/* ---------- quiz interaction ---------- */
+.opts .opt{cursor:pointer;user-select:none}
+.opt.wrong{border-color:color-mix(in srgb,#d6543f 55%,var(--line));background:color-mix(in srgb,#d6543f 8%,var(--surface));opacity:.72}
+.opt.wrong .k{background:color-mix(in srgb,#d6543f 22%,var(--surface-2));color:#b23b28}
+.opt.reveal-correct{animation:pop .5s ease both}
+@keyframes shake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
+@keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.04)}100%{transform:scale(1)}}
+.opt.shake{animation:shake .45s cubic-bezier(.36,.07,.19,.97) both}
+.quiz-hint{margin-top:16px;font-size:16px;color:var(--muted);opacity:0;transform:translateY(6px);
+  transition:opacity .4s ease,transform .4s ease}
+.quiz-hint.show{opacity:1;transform:none}
+.quiz-hint b{color:var(--accent)}
+
+/* ---------- count-up numbers ---------- */
+.count{font-variant-numeric:tabular-nums}
+
+/* ---------- institution logo wall (official logos, uniform height) ---------- */
+.orglogos{margin-top:30px;display:flex;gap:12px;flex-wrap:wrap;align-items:stretch}
+.orglogo{display:flex;align-items:center;justify-content:center;height:56px;padding:9px 16px;
+  background:#fff;border:1px solid var(--line);border-radius:12px;
+  transition:transform .2s ease,box-shadow .2s ease}
+.orglogo:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.orglogo img{height:100%;width:auto;max-width:200px;object-fit:contain;display:block}
+@media(max-width:520px){.orglogo{height:48px;padding:8px 12px}}
+
+/* ---------- unified figure framing (matted cards) ---------- */
+figure.contain{background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  padding:10px;box-shadow:var(--shadow);overflow:hidden}
+figure.contain img{border:none;border-radius:8px;background:transparent}
+figure.contain figcaption{padding:2px 4px 2px}
+
+/* ---------- takeaways cards ---------- */
+.card .cs{font-weight:500;font-size:14.5px;line-height:1.45;color:var(--card-num);margin-top:10px}
+
+/* ---------- hero scroll cue ---------- */
+.scrollcue{display:inline-flex;align-items:center;gap:8px;margin-top:30px;color:var(--muted);
+  font-size:14px;font-weight:600;letter-spacing:.02em}
+.scrollcue svg{width:18px;height:18px;animation:bob 1.8s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+@media(prefers-reduced-motion:reduce){.scrollcue svg{animation:none}.progress{transition:none}}
+
+/* ---------- case-study dividers (their own emphasized block) ---------- */
+.divider.case{background:linear-gradient(180deg,var(--accent-soft),var(--bg));border-top:1px solid var(--line)}
+.divider.case .cnum{font-size:clamp(42px,7vw,66px);font-weight:800;color:var(--accent);
+  line-height:.95;letter-spacing:-.03em;margin-bottom:8px}
+.divider.case .step{color:var(--accent-dark)}
+.divider.case .lead{max-width:56ch}
+
+/* ---------- per-track color coding (intro + 3 case studies) ---------- */
+.track-intro{--accent:#0f8a8a;--accent-dark:#0b6a6a;--card:#0f8a8a;--accent-soft:color-mix(in srgb,var(--accent) 15%,var(--bg))}
+.track-01{--accent:#6a40d4;--accent-dark:#5330ad;--card:#6a40d4;--accent-soft:color-mix(in srgb,var(--accent) 15%,var(--bg))}
+.track-02{--accent:#12855a;--accent-dark:#0d6647;--card:#12855a;--accent-soft:color-mix(in srgb,var(--accent) 15%,var(--bg))}
+.track-03{--accent:#c4386f;--accent-dark:#9f2b59;--card:#c4386f;--accent-soft:color-mix(in srgb,var(--accent) 15%,var(--bg))}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .track-intro{--accent:#3fb6b6;--accent-dark:#2f9d9d}
+  :root:not([data-theme="light"]) .track-01{--accent:#a486f0;--accent-dark:#8f6ae8}
+  :root:not([data-theme="light"]) .track-02{--accent:#45c491;--accent-dark:#2fae7c}
+  :root:not([data-theme="light"]) .track-03{--accent:#ec7aa6;--accent-dark:#e05b90}
+}
+:root[data-theme="dark"] .track-intro{--accent:#3fb6b6;--accent-dark:#2f9d9d}
+:root[data-theme="dark"] .track-01{--accent:#a486f0;--accent-dark:#8f6ae8}
+:root[data-theme="dark"] .track-02{--accent:#45c491;--accent-dark:#2fae7c}
+:root[data-theme="dark"] .track-03{--accent:#ec7aa6;--accent-dark:#e05b90}
+/* colored top bar marking each track's divider */
+.track > .divider{position:relative}
+.track > .divider::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--accent)}
+
+/* ---------- scroll focus (dim + blur the blocks you're not reading) ---------- */
+.focusable{transition:opacity .55s ease,filter .55s ease}
+.focusable.dim{opacity:.26;filter:blur(3px)}
+@media(prefers-reduced-motion:reduce){.focusable{transition:none}.focusable.dim{opacity:1;filter:none}}
+
+/* ---------- collapsible appendix box ---------- */
+.appendix-box{border-top:1px solid var(--line)}
+.appendix-toggle{list-style:none;cursor:pointer;background:var(--surface);padding:22px 0;
+  user-select:none;transition:background .2s ease}
+.appendix-toggle::-webkit-details-marker{display:none}
+.appendix-toggle:hover{background:var(--surface-2)}
+.appendix-toggle-inner{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.appendix-toggle .at-label{font-weight:700;font-size:16px;color:var(--text)}
+.appendix-toggle .at-hint{display:block;font-weight:500;font-size:14.5px;color:var(--muted);margin-top:3px}
+.appendix-toggle .chev{width:24px;height:24px;flex:none;color:var(--accent);transition:transform .25s ease}
+.appendix-box[open] .appendix-toggle .chev{transform:rotate(180deg)}
+.appendix-box[open] .appendix-toggle{border-bottom:1px solid var(--line)}
+.appendix-box > section:first-of-type{border-top:none}
+
+/* ---------- text scales with --fs (driven by the settings panel) ---------- */
+.hero h1{font-size:calc(clamp(34px,6vw,60px) * var(--fs))}
+h2{font-size:calc(clamp(26px,4vw,38px) * var(--fs))}
+.divider h2{font-size:calc(clamp(30px,5.5vw,50px) * var(--fs))}
+.divider.case .cnum{font-size:calc(clamp(42px,7vw,66px) * var(--fs))}
+h3{font-size:1.18em}
+.lead{font-size:1.12em}
+.hero .sub{font-size:1.18em}
+.kicker{font-size:.8em}
+.divider .step{font-size:.82em}
+figcaption{font-size:.85em}
+.vwall figcaption{font-size:.88em}
+.collage figcaption,.wall figcaption{font-size:.77em}
+.note{font-size:.91em}
+.card .ct{font-size:1em}
+.card .cs{font-size:.85em}
+.tag{font-size:.82em}
+.author .aff{font-size:.88em}
+.nav-links a{font-size:.88em}
+footer{font-size:.88em}
+.org-name{font-size:.8em}
+.quiz-hint{font-size:.94em}
+.appendix-toggle .at-hint{font-size:.85em}
+.metric .big{font-size:1.76em}
+.mapsbar .ms{font-size:.88em}
+
+/* ---------- settings widget ---------- */
+.settings-btn{position:fixed;right:20px;bottom:20px;z-index:80;width:50px;height:50px;border-radius:50%;
+  display:grid;place-items:center;background:var(--accent);color:#fff;border:none;cursor:pointer;
+  box-shadow:0 6px 20px rgba(0,0,0,.28);transition:transform .25s ease,background .2s ease}
+.settings-btn:hover{background:var(--accent-dark);transform:rotate(45deg)}
+.settings-btn svg{width:25px;height:25px}
+.settings-panel{position:fixed;right:20px;bottom:82px;z-index:80;width:280px;
+  background:var(--bg);border:1px solid var(--line);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.28);
+  padding:18px;opacity:0;transform:translateY(10px) scale(.98);pointer-events:none;
+  transition:opacity .2s ease,transform .2s ease}
+.settings-panel.open{opacity:1;transform:none;pointer-events:auto}
+.settings-group{margin-bottom:18px}
+.settings-group:last-child{margin-bottom:0}
+.settings-group h4{margin:0 0 9px;font-size:12px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--muted)}
+.fs-row{display:flex;align-items:center;gap:12px}
+.fs-row .fs-a{font-weight:800;color:var(--muted);line-height:1}
+.fs-row input[type=range]{flex:1;accent-color:var(--accent);cursor:pointer}
+.seg{display:flex;gap:6px}
+.seg button{flex:1;min-width:0;font:inherit;font-size:14px;font-weight:600;color:var(--text);
+  background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:9px 4px;cursor:pointer;
+  transition:background .15s ease,color .15s ease,border-color .15s ease}
+.seg button:hover{border-color:var(--accent)}
+.seg button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.settings-apply{width:100%;margin-top:16px;font:inherit;font-size:14px;font-weight:700;color:#fff;
+  background:var(--accent);border:1px solid var(--accent);border-radius:9px;padding:11px;cursor:pointer;
+  transition:background .15s ease,border-color .15s ease}
+.settings-apply:hover{background:var(--accent-dark);border-color:var(--accent-dark)}
+.settings-reset{width:100%;margin-top:8px;font:inherit;font-size:13.5px;font-weight:600;color:var(--muted);
+  background:transparent;border:1px solid var(--line);border-radius:9px;padding:10px;cursor:pointer;
+  transition:color .15s ease,border-color .15s ease}
+.settings-reset:hover{color:var(--accent);border-color:var(--accent)}
+.settings-msg{margin-top:10px;min-height:1.1em;text-align:center;font-size:12.5px;font-weight:600;
+  color:var(--accent);opacity:0;transition:opacity .2s ease}
+.settings-msg.show{opacity:1}
+.settings-note{margin-top:8px;font-size:12px;color:var(--muted);min-height:1em;line-height:1.35}
+
+/* ---------- live subtitles (speech-to-text) ---------- */
+.captions{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;z-index:79;
+  width:min(920px,calc(100vw - 40px));
+  display:flex;align-items:center;gap:12px;
+  background:rgba(8,12,12,.88);color:#fff;border-radius:14px;padding:14px 20px;
+  box-shadow:0 10px 30px rgba(0,0,0,.45);backdrop-filter:blur(6px);
+  font-size:clamp(18px,2.3vw,26px);font-weight:600;line-height:1.35}
+.captions[hidden]{display:none}
+.cap-dot{width:11px;height:11px;border-radius:50%;background:#ff4d4d;flex:none;animation:blink 1.4s infinite}
+.cap-text{flex:1;min-width:0;white-space:nowrap;overflow:hidden}
+.cap-text .interim{opacity:.6}
+@media(prefers-reduced-motion:reduce){.cap-dot{animation:none}}
+@media(max-width:700px){.captions{bottom:84px;font-size:18px;padding:12px 16px}}
+.voice-cue{position:fixed;left:50%;transform:translateX(-50%) translateY(6px);bottom:96px;z-index:80;
+  background:var(--accent);color:#fff;font-weight:700;font-size:15px;letter-spacing:.01em;
+  padding:9px 18px;border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.35);
+  opacity:0;pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+.voice-cue.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media print{.settings-btn,.settings-panel,.captions,.voice-cue{display:none}}
+</style>
+</head>
+<body>
+
+<!-- ===================== NAV ===================== -->
+<div class="progress" id="progress"></div>
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="brand">CERN&nbsp;Robotics<span>·</span>Mapping&nbsp;&amp;&nbsp;Navigation</div>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-links">☰</button>
+    <div class="nav-links" id="nav-links">
+      <a href="#overview">Overview</a>
+      <a href="#charm">CHARM GUI</a>
+      <a href="#sps">SPS Survey</a>
+      <a href="#lidar">LiDAR Mapping</a>
+      <a href="#appendix">Appendix</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ===================== HERO ===================== -->
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-copy">
+      <div class="kicker">Helsinki Institute of Physics · Aalto University</div>
+      <h1>Robot Mapping and Navigation for<br>Inspection Tasks in CERN Facilities</h1>
+      <p class="sub">Autonomous and teleoperated mobile robots that inspect, survey and map CERN's accelerator facilities — reducing human exposure to radiation and boosting machine availability.</p>
+      <div class="author">
+        <div class="avatar">PH</div>
+        <div>
+          <div class="name">Pejman Habibiroudkenar</div>
+          <div class="aff">Helsinki Institute of Physics · Aalto University · Tampere University</div>
+        </div>
+      </div>
+      <div class="orglogos" aria-label="Affiliations">
+        <span class="orglogo"><img src="assets/img/hip-logo.png" alt="Helsinki Institute of Physics"></span>
+        <span class="orglogo"><img src="assets/img/aalto-logo.svg" alt="Aalto University"></span>
+        <span class="orglogo"><img src="assets/img/tampere-logo.svg" alt="Tampere University"></span>
+        <span class="orglogo"><img src="assets/img/uh-logo.svg" alt="University of Helsinki"></span>
+        <span class="orglogo"><img src="assets/img/cern-logo.svg" alt="CERN"></span>
+      </div>
+      <div class="tags">
+        <span class="tag">Radiation Protection</span>
+        <span class="tag">3D Mapping</span>
+        <span class="tag">Teleoperation</span>
+        <span class="tag">LiDAR Odometry</span>
+        <span class="tag">SLAM</span>
+      </div>
+      <a class="scrollcue" href="#overview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+        Scroll to explore
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== OVERVIEW ===================== -->
+<section id="overview">
+  <div class="wrap">
+    <span class="kicker">Motivation</span>
+    <h2>Why use robotics at CERN?</h2>
+    <p class="lead">An opening question — tap an answer.</p>
+    <div class="opts" id="quiz">
+      <div class="opt"><span class="k">A</span>CERN has too much money</div>
+      <div class="opt"><span class="k">B</span>Publicity</div>
+      <div class="opt" data-correct="1"><span class="k">C</span>Radiation protection</div>
+      <div class="opt"><span class="k">D</span>Optimal operation</div>
+    </div>
+    <p class="quiz-hint" id="quiz-hint">Correct — <b>radiation protection</b>. Keeping people out of high-dose areas is the primary driver for robotics at CERN.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="kicker">Landscape</span>
+    <h2>Robotic service at CERN</h2>
+    <div class="split media-wide" style="align-items:center">
+      <ul class="bul" style="margin-bottom:0">
+        <li>Infrastructure was <b>not designed to host robotics</b></li>
+        <li>Robots must be <b>adapted to the environment</b></li>
+        <li>Highly versatile systems, but <b>relatively low efficiency</b></li>
+        <li><b>More than <span class="count" data-to="20">20</span> robotic systems</b> operational in different configurations</li>
+      </ul>
+      <div>
+        <h3>Systems in rotation</h3>
+        <div class="tags">
+          <span class="tag">Telemax</span>
+          <span class="tag">CERNBot1</span>
+          <span class="tag">CERNBot2</span>
+          <span class="tag">TIM</span>
+          <span class="tag">Teodor</span>
+          <span class="tag">Unitree Go 2</span>
+          <span class="tag">CERNBotCrane</span>
+          <span class="tag">CERNBotSPS</span>
+          <span class="tag">Train Inspection Monorail</span>
+        </div>
+      </div>
+    </div>
+    <div class="wall" style="margin-top:30px">
+      <figure><img src="assets/img/p03-009.jpg" alt="Unitree Go 2 quadruped robot" loading="lazy"><figcaption>Unitree Go 2</figcaption></figure>
+      <figure><img src="assets/img/p03-012.jpg" alt="CERNBot with omnidirectional wheels and arm" loading="lazy"><figcaption>CERNBot</figcaption></figure>
+      <figure><img src="assets/img/p03-007.jpg" alt="CHARMBot inspection platform" loading="lazy"><figcaption>CHARMBot</figcaption></figure>
+      <figure><img src="assets/img/p03-001.jpg" alt="Train Inspection Monorail sensor head" loading="lazy"><figcaption>Train Inspection Monorail (TIM)</figcaption></figure>
+      <figure><img src="assets/img/p03-002.jpg" alt="CERNBot working on a beamline" loading="lazy"><figcaption>CERNBot · ISOLDE</figcaption></figure>
+      <figure><img src="assets/img/p03-005.jpg" alt="Early dual-arm CERNBot prototype" loading="lazy"><figcaption>Dual-arm CERNBot</figcaption></figure>
+      <figure><img src="assets/img/p03-000.jpg" alt="Telemax tracked robot" loading="lazy"><figcaption>Telemax</figcaption></figure>
+      <figure><img src="assets/img/p03-004.jpg" alt="Teodor tracked robot" loading="lazy"><figcaption>Teodor</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="kicker">Deployed Systems</span>
+    <h2><span class="count" data-to="12">12</span> permanently installed systems</h2>
+    <p class="lead">Robots that live inside the accelerator complex and run recurring inspection and maintenance tasks — cutting human exposure and keeping the machines available.</p>
+    <ul class="bul">
+      <li><b>1</b> milling robot</li>
+      <li><b>2</b> SPS robots for radiation-protection surveys</li>
+      <li><b>4</b> LHC Train Inspection Monorails (TIM)</li>
+      <li><b>CHARM</b> and <b>North Area (NA)</b> robots</li>
+      <li><b>3</b> ISOLDE target-changing robots</li>
+    </ul>
+    <div class="metric"><span class="big">4&nbsp;h → 5&nbsp;min</span><span class="muted">NA80 robot intervention time — the kind of <b>machine-availability boost</b> that drives the effort to make robotics more efficient in existing facilities.</span></div>
+    <div class="vwall" style="margin-top:26px">
+      <figure class="feature">
+        <div class="video"><span class="badge">SPS survey</span>
+          <video controls muted loop playsinline preload="metadata" poster="assets/video/poster-sps.jpg">
+            <source src="assets/video/deployed-sps.webm" type="video/webm"></video></div>
+        <figcaption>SPS radiation-protection survey robot</figcaption>
+      </figure>
+      <figure>
+        <div class="video">
+          <video controls muted loop playsinline preload="metadata" poster="assets/video/poster-TIM.jpg">
+            <source src="assets/video/deployed-TIM.webm" type="video/webm"></video></div>
+        <figcaption>Train Inspection Monorail (TIM) · LHC</figcaption>
+      </figure>
+      <figure>
+        <div class="video">
+          <video controls muted loop playsinline preload="metadata" poster="assets/video/poster-charm.jpg">
+            <source src="assets/video/deployed-charm.webm" type="video/webm"></video></div>
+        <figcaption>CHARM robot</figcaption>
+      </figure>
+      <figure>
+        <div class="video">
+          <video controls muted loop playsinline preload="metadata" poster="assets/video/poster-arm.jpg">
+            <source src="assets/video/deployed-arm.webm" type="video/webm"></video></div>
+        <figcaption>KUKA target-changing robot · ISOLDE</figcaption>
+      </figure>
+      <figure>
+        <div class="video">
+          <video controls muted loop playsinline preload="metadata" poster="assets/video/poster-elevator.jpg">
+            <source src="assets/video/deployed-elevator.webm" type="video/webm"></video></div>
+        <figcaption>Robot navigating a facility elevator</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="kicker">Deployed Systems · SPS Robot</span>
+    <h2>Radiation-protection survey with two SPS robots</h2>
+    <div class="split media-wide">
+      <div>
+        <ul class="bul">
+          <li>Two SPS robots successfully commissioned for <b>RP measurements and anomaly detection</b> (e.g. water leaks)</li>
+          <li>Used <b>in parallel</b>: autonomous wall-following combined with manual teleoperation at access points — 3 sectors each, then a swap of the charging station between BA3 and BA6</li>
+          <li><b><span class="count" data-to="7">7</span> km of RP survey performed in <span class="count" data-to="1.5" data-dec="1">1.5</span> hours</b></li>
+        </ul>
+      </div>
+      <figure class="contain"><img src="assets/img/p05-001.jpg" alt="RP survey comparison chart" loading="lazy">
+        <figcaption>Comparison of manual and robot RP surveys in Sextant 2 (2022–2023)</figcaption></figure>
+    </div>
+    <div style="margin-top:26px">
+      <div class="video">
+        <span class="badge">Live survey</span>
+        <video controls muted loop playsinline preload="metadata" poster="assets/video/poster-rp-survey.jpg">
+          <source src="assets/video/sps-rp-survey.webm" type="video/webm">
+        </video>
+      </div>
+      <div class="note">The SPS robot automatically detecting beam-line pillar supports — LiDAR distance and pillar detection overlaid on the tunnel camera stream.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="kicker">Deployed Systems · Operator Interfaces</span>
+    <h2>Teleoperation &amp; situational awareness</h2>
+    <div class="split media-wide">
+      <div>
+        <ul class="bul">
+          <li>Some operations require human cognition and perception — they <b>must be teleoperated</b></li>
+          <li>In confined environments, <b>situational awareness through intuitive interfaces is key</b>:</li>
+          <li>Decreases operator stress</li>
+          <li>Increases robot reliability through "online" fault prediction (digital twins)</li>
+        </ul>
+      </div>
+      <div class="figs g2">
+        <figure class="contain"><img src="assets/img/p06-000.jpg" alt="Teleoperation of TIM">
+          <figcaption>Teleoperated control of TIM in the LHC using keyboard or gaming controllers in the CERN Control Centre</figcaption></figure>
+        <figure class="contain"><img src="assets/img/p06-001.jpg" alt="Situational awareness interface">
+          <figcaption>Enhanced situational awareness &amp; digital twins for online fault prediction</figcaption></figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="track track-intro">
+<!-- ===================== OUR CONTRIBUTION ===================== -->
+<div class="divider" id="contribution">
+  <div class="wrap">
+    <div class="step">Our Contribution</div>
+    <h2>Contributions to CERN robotic activities</h2>
+    <p class="lead" style="margin:18px auto 0">Three case studies — a CHARM teleoperation GUI, SPS path &amp; navigation, and 3D mapping with state-of-the-art sensors.</p>
+  </div>
+</div>
+
+</div><!-- /track-intro -->
+<div class="track track-01">
+<!-- Case Study 01 -->
+<div class="divider case" id="charm">
+  <div class="wrap">
+    <div class="cnum">01</div>
+    <div class="step">Case Study</div>
+    <h2>CHARM Teleoperation GUI</h2>
+    <p class="lead" style="margin:14px auto 0">From a 2D camera view to a 3D-mapped interface — giving operators depth and spatial awareness in the radiation zone.</p>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <span class="kicker">CHARM Facility</span>
+    <h2>A unique irradiation facility</h2>
+    <div class="split media-wide">
+      <div>
+        <p>CHARM is a unique irradiation infrastructure at CERN, long used for testing the electronic equipment deployed in CERN's accelerators — and accessible to external users. It reproduces three key radiation effects:</p>
+        <div class="cards c3">
+          <div class="card"><div class="num">01</div><div class="ct">Single-event effects</div></div>
+          <div class="card"><div class="num">02</div><div class="ct">Total ionizing dose</div></div>
+          <div class="card"><div class="num">03</div><div class="ct">Displacement damage</div></div>
+        </div>
+        <p class="note">A notable application was testing the CELESTA CubeSat's radiation model before its spaceflight — the first system-level test of an entire satellite.</p>
+      </div>
+      <figure class="contain"><img src="assets/img/p08-000.jpg" alt="CHARM radiation zone">
+        <figcaption>Equipment inside the CHARM controlled radiation area</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="kicker">Problem</span>
+    <h2>Challenges with the 2D GUI</h2>
+    <div class="split media-wide">
+      <div>
+        <div class="cards c4" style="grid-template-columns:repeat(2,1fr)">
+          <div class="card"><div class="ct">Operation during CHARM target changes</div></div>
+          <div class="card"><div class="ct">Operator-friendly environment</div></div>
+          <div class="card"><div class="ct">Camera stream</div></div>
+          <div class="card"><div class="ct">Base control</div></div>
+        </div>
+        <p class="note" style="margin-top:18px">Key limitations: <b>narrow field of view (FOV)</b> and <b>latency issues</b>.</p>
+      </div>
+      <div class="stack">
+        <figure class="contain"><img src="assets/img/p09-000.jpg" alt="2D GUI screenshot"></figure>
+        <figure class="contain"><img src="assets/img/p09-001.jpg" alt="2D GUI screenshot">
+          <figcaption>The existing 2D teleoperation interface</figcaption></figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="kicker">Mapping</span>
+    <h2>Map creation with CHARMBot</h2>
+    <p class="lead">CHARMBot travels from the charging station to the target area. Mapping relies on two 3D point-cloud sensors: a Unitree LiDAR&nbsp;L1 and a ZED camera.</p>
+    <div class="figs g2">
+      <figure class="contain"><img src="assets/img/p10-000.jpg" alt="CHARMBot with UniLiDAR and ZED camera">
+        <figcaption>CHARMBot equipped with UniLiDAR L1 and ZED camera</figcaption></figure>
+      <figure class="contain"><img src="assets/img/p10-001.jpg" alt="Facility map with target area and charging station">
+        <figcaption>Route from the charging station to the target area</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="kicker">Platform</span>
+    <h2>CHARMBot mechanical overview</h2>
+    <div class="cards c4">
+      <div class="card"><div class="num">01</div><div class="ct">Omnidirectional wheels</div></div>
+      <div class="card"><div class="num">02</div><div class="ct">RP sensor</div></div>
+      <div class="card"><div class="num">03</div><div class="ct">Axis V5915 PTZ network camera</div></div>
+      <div class="card"><div class="num">04</div><div class="ct">Axis F1035-E camera</div></div>
+    </div>
+    <div class="figs g3">
+      <figure class="contain"><img src="assets/img/p11-001.jpg" alt="CHARMBot view"></figure>
+      <figure class="contain"><img src="assets/img/p11-002.jpg" alt="CHARMBot view"></figure>
+      <figure class="contain"><img src="assets/img/p11-000.jpg" alt="CHARMBot top view">
+        <figcaption>Component callouts on the CHARMBot platform</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="kicker">Meshing · Part 1</span>
+    <h2>From point cloud to clean geometry</h2>
+    <div class="figs g3">
+      <figure class="contain"><img src="assets/img/p12-000.jpg" alt="Merged map point cloud">
+        <figcaption>Merged map</figcaption></figure>
+      <figure class="contain"><img src="assets/img/p12-001.jpg" alt="Statistical outlier removal">
+        <figcaption>Statistical outlier removal</figcaption></figure>
+      <figure class="contain"><img src="assets/img/p12-002.jpg" alt="Calculating normals">
+        <figcaption>Calculating normals</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="kicker">Meshing · Part 2</span>
+    <h2>Building the final mesh</h2>
+    <div class="figs g3">
+      <figure class="contain"><img src="assets/img/p13-001.jpg" alt="Mesh created">
+        <figcaption>Mesh created</figcaption></figure>
+      <figure class="contain"><img src="assets/img/p13-000.png" alt="Density filtering histogram">
+        <figcaption>Density filtering</figcaption></figure>
+      <figure class="contain"><img src="assets/img/p13-002.jpg" alt="Final mesh">
+        <figcaption>Final mesh</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="kicker">3D GUI</span>
+    <h2>Robot operated with a 3D GUI in Unity</h2>
+    <p class="lead">The generated 3D map is streamed into a Unity interface, giving the operator depth and spatial context that the 2D view could not.</p>
+    <div class="figs g2">
+      <figure class="contain"><img src="assets/img/p14-000.jpg" alt="3D GUI point cloud view"></figure>
+      <figure class="contain"><img src="assets/img/p14-001.jpg" alt="3D GUI with distance overlays">
+        <figcaption>Wall- and pillar-distance overlays with an emergency stop control</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+</div><!-- /track-01 -->
+<div class="track track-02">
+<!-- ===================== SPS RADIATION SURVEY ===================== -->
+<div class="divider case" id="sps">
+  <div class="wrap">
+    <div class="cnum">02</div>
+    <div class="step">Case Study</div>
+    <h2>SPS Radiation Survey</h2>
+    <p class="lead" style="margin:14px auto 0">Autonomy for a hazardous radiation-protection survey — mapping and navigation across the SPS ring.</p>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <span class="kicker">Defining the Problem</span>
+    <h2>Why autonomy for the SPS survey?</h2>
+    <div class="cards c4">
+      <div class="card"><div class="num">01</div><div class="ct">Radiation survey at SPS is hazardous to be done by humans</div></div>
+      <div class="card"><div class="num">02</div><div class="ct">Tele-operation by robots is suggested</div></div>
+      <div class="card"><div class="num">03</div><div class="ct">Problems with tele-operation</div></div>
+      <div class="card"><div class="num">04</div><div class="ct">Target areas in SPS</div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="kicker">Problems with Tele-Operation</span>
+    <h2>Where pure teleoperation falls short</h2>
+    <div class="cards c5">
+      <div class="card"><div class="num">01</div><div class="ct">Full operator attendance is required</div></div>
+      <div class="card"><div class="num">02</div><div class="ct">Camera stream delay and loss</div></div>
+      <div class="card"><div class="num">03</div><div class="ct">Complex preparations</div></div>
+      <div class="card"><div class="num">04</div><div class="ct">Missing safety features</div></div>
+      <div class="card"><div class="num">05</div><div class="ct">Control delay and loss</div></div>
+    </div>
+    <div class="figs g2" style="margin-top:24px">
+      <figure class="contain"><img src="assets/img/p17-000.jpg" alt="Control room"></figure>
+      <figure class="contain"><img src="assets/img/p17-001.jpg" alt="Operators in the CERN Control Centre">
+        <figcaption>Operators teleoperating from the CERN Control Centre</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="kicker">Target Areas in SPS</span>
+    <h2>Where the survey happens</h2>
+    <p class="lead">The colour-coded outlines tie each target location on the SPS ring to a photo of what the robot actually sees there.</p>
+    <figure class="contain"><img src="assets/img/slide18-targets.png" alt="Annotated aerial map of the SPS ring linking survey locations to tunnel photos: access points, tunnel arc, Safety Gate 19 and Beam Dump Area BA5" loading="lazy">
+      <figcaption><b>Access points</b> (6 in total) · <b>Tunnel arc</b> · <b>Safety Gate 19</b> · <b>Beam Dump Area BA5</b></figcaption></figure>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="kicker">Solution</span>
+    <h2>Radiation survey at SPS — mapping &amp; navigation</h2>
+    <div class="split media-wide">
+      <div>
+        <p class="lead">The target area was mapped using <b>Karto SLAM</b>, and autonomous navigation was tested with the <b>ros_nav</b> package.</p>
+        <div class="video">
+          <span class="badge">Survey run</span>
+          <video controls muted loop playsinline preload="metadata" poster="assets/video/poster-navigation.jpg">
+            <source src="assets/video/sps-navigation.webm" type="video/webm">
+          </video>
+        </div>
+        <div class="note">The survey robot navigating an SPS service gallery toward the beam area.</div>
+      </div>
+      <div class="figs g2">
+        <figure class="contain"><img src="assets/img/p19-000.png" alt="Occupancy map of access point BA6" loading="lazy">
+          <figcaption>Access point BA6</figcaption></figure>
+        <figure class="contain"><img src="assets/img/p19-001.png" alt="Occupancy map of the beam dump area" loading="lazy">
+          <figcaption>Beam Dump Area</figcaption></figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /track-02 -->
+<div class="track track-03">
+<!-- ===================== NON-REPETITIVE LIDAR ===================== -->
+<div class="divider case" id="lidar">
+  <div class="wrap">
+    <div class="cnum">03</div>
+    <div class="step">Case Study</div>
+    <h2>Non-Repetitive LiDAR Mapping</h2>
+    <p class="lead" style="margin:14px auto 0">Adaptive LiDAR–inertial odometry that stays reliable on sparse, non-repetitive scans in feature-poor tunnels.</p>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <span class="kicker">Aalto Activities · Publications</span>
+    <h2>Adaptive non-repetitive LiDAR–inertial odometry</h2>
+    <div class="split media-wide">
+      <div>
+        <h3>Non-Repetitive Scan Correction for LiDAR Odometry via Spatial Analysis in CERN Facilities</h3>
+        <p class="muted">2026 — Accepted</p>
+        <h3 style="margin-top:24px">NRLIO: Adaptive Non-Repetitive LiDAR–Inertial Odometry</h3>
+        <p class="muted">Continuing from the previous work, NRLIO tightly fuses LiDAR data with an IMU, adaptively choosing the best matching strategy for each scan and validating updates with a statistical check. Tested across four different sensors and environments, NRLIO outperforms leading systems — especially on narrow-view and sparse sensors — while running in real time on a standard computer.</p>
+      </div>
+      <figure class="contain"><img src="assets/img/p21-005.jpg" alt="NRLIO pipeline diagram">
+        <figcaption>Open- vs. confined-space registration selection, fused with an error-state Kalman filter to generate the map</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="kicker">Results · Interactive</span>
+    <h2>Explore the maps</h2>
+    <p class="lead">Real 3D LiDAR point-cloud maps built during this work — orbit, zoom and pan them right here.</p>
+
+    <div class="mapscta">
+      <div class="viewer">
+        <div class="viewer-stage">
+          <canvas id="cloud-canvas"></canvas>
+          <div class="viewer-overlay" id="cloud-loading">Loading point cloud…</div>
+          <div class="viewer-hud" id="cloud-hud"></div>
+          <div class="viewer-hint">drag&nbsp;orbit · scroll&nbsp;zoom · right-drag&nbsp;pan</div>
+        </div>
+        <div class="viewer-bar" id="cloud-tabs"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /track-03 -->
+<!-- ===================== TAKEAWAYS ===================== -->
+<section>
+  <div class="wrap">
+    <span class="kicker">Takeaways</span>
+    <h2>What to take away</h2>
+    <div class="cards c3">
+      <div class="card">
+        <div class="num">01</div>
+        <div class="ct">Less human exposure</div>
+        <div class="cs">Robots run the radiation surveys and interventions that once required people in high-dose areas.</div>
+      </div>
+      <div class="card">
+        <div class="num">02</div>
+        <div class="ct">Higher machine availability</div>
+        <div class="cs">NA80 intervention cut from 4&nbsp;h to 5&nbsp;min, and 7&nbsp;km of SPS survey done in 1.5&nbsp;hours.</div>
+      </div>
+      <div class="card">
+        <div class="num">03</div>
+        <div class="ct">Toward autonomy</div>
+        <div class="cs">3D teleoperation GUIs and adaptive non-repetitive LiDAR odometry move the work from teleoperation toward autonomy.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- closing -->
+<div class="divider">
+  <div class="wrap">
+    <div class="step">Thank you</div>
+    <h2>Thank you for listening</h2>
+    <p class="lead" style="margin:18px auto 0">Pejman Habibiroudkenar · Helsinki Institute of Physics</p>
+  </div>
+</div>
+
+<!-- ===================== APPENDIX ===================== -->
+<section class="appendix-intro" id="appendix">
+  <div class="wrap">
+    <span class="kicker">Extra Materials</span>
+    <h2>Appendix</h2>
+    <p class="lead">Additional background and detail supporting the talk — the CHARM 3D-GUI work, the non-repetitive LiDAR pipeline, and the SPS autonomy plan.</p>
+  </div>
+</section>
+
+<details class="appendix-box" id="appendix-box">
+  <summary class="appendix-toggle">
+    <div class="wrap appendix-toggle-inner">
+      <span class="at-label">Appendix materials — A1 to A7
+        <span class="at-hint">Teleoperation, CHARM intervention &amp; 3D GUI, non-repetitive LiDAR, mapping pipelines, SPS autonomy. Click to open or close.</span>
+      </span>
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+  </summary>
+
+<section>
+  <div class="wrap">
+    <span class="kicker">Appendix · A1</span>
+    <h2>Teleoperation in practice</h2>
+    <div class="figs g2">
+      <figure class="contain"><img src="assets/img/p24-000.jpg" alt="Teleoperation GUI on a laptop">
+        <figcaption>Front and gripper camera streams in the teleoperation GUI</figcaption></figure>
+      <figure class="contain"><img src="assets/img/p26-000.jpg" alt="Robot surveying an SPS gallery">
+        <figcaption>Robot surveying an SPS service gallery</figcaption></figure>
+    </div>
+    <div class="figs g2" style="margin-top:16px">
+      <figure class="contain"><img src="assets/img/p25-000.png" alt="Occupancy map — access point BA3">
+        <figcaption>Occupancy map — Access point BA3</figcaption></figure>
+      <figure class="contain"><img src="assets/img/p25-001.png" alt="Occupancy map — beam dump area">
+        <figcaption>Occupancy map — Beam Dump Area</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="kicker">Appendix · A2</span>
+    <h2>CHARM intervention with CHARMBot</h2>
+    <div class="split media-wide">
+      <div>
+        <ul class="bul">
+          <li>The CHARM radiation-testing facility requires a <b>camera stream</b> to teleoperate a platform that moves electronic devices in and out of a radiation zone</li>
+          <li>The camera stream is provided by a robot called <b>CHARMBot</b></li>
+          <li>The current GUI only provides <b>2D visual information</b>, making depth and spatial relationships hard to perceive</li>
+          <li>As a result, <b>operation time increases</b> and operators lack a comprehensive view of the scene</li>
+        </ul>
+      </div>
+      <div class="stack">
+        <figure class="contain"><img src="assets/img/p27-000.jpg" alt="CHARMBot with sensors">
+          <figcaption>CHARMBot with omnidirectional wheels, RP sensor, Unitree LiDAR L1 and ZED camera</figcaption></figure>
+        <figure class="contain"><img src="assets/img/p27-001.jpg" alt="CHARM intervention path">
+          <figcaption>The CHARM robotic intervention, start to end point</figcaption></figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="kicker">Appendix · A3</span>
+    <h2>A 3D GUI for CHARM teleoperation</h2>
+    <div class="split media-wide">
+      <div>
+        <ul class="bul">
+          <li>Developed a <b>3D GUI</b> to enhance teleoperation capabilities</li>
+          <li>Integrated a <b>3D map</b> generated from a 3D LiDAR and camera system</li>
+          <li>The interface provides <b>better spatial awareness</b>, reducing operation time and improving efficiency in radiation-zone operations</li>
+        </ul>
+      </div>
+      <div class="stack">
+        <div class="figs g2">
+          <figure class="contain"><img src="assets/img/p28-000.jpg" alt="Example of 3D GUI">
+            <figcaption>3D GUI — example 1</figcaption></figure>
+          <figure class="contain"><img src="assets/img/p28-001.jpg" alt="Example of 3D GUI">
+            <figcaption>3D GUI — example 2</figcaption></figure>
+        </div>
+        <figure class="contain"><img src="assets/img/p28-002.jpg" alt="3D mapping and meshing stages">
+          <figcaption>3D mapping with LiDAR + camera and meshing for the 3D GUI</figcaption></figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="kicker">Appendix · A4</span>
+    <h2>3D mapping with non-repetitive LiDAR</h2>
+    <div class="split media-wide">
+      <div>
+        <ul class="bul">
+          <li><b>Autonomous operation</b> of mobile robots in large-scale, feature-sparse environments (like CERN's facilities) poses significant <b>localization and mapping challenges</b></li>
+          <li><b>Non-repetitive scanning LiDAR</b> makes traditional registration methods unreliable</li>
+          <li>Conventional techniques (e.g. generalized ICP) are optimized for <b>repetitive scan patterns</b> and often fail on sparse or irregular data with limited overlap</li>
+        </ul>
+      </div>
+      <figure class="contain"><img src="assets/img/p29-000.jpg" alt="Comparison of traditional vs proposed registration">
+        <figcaption>Traditional registration vs. the proposed registration — accurate alignment on sparse scans</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="kicker">Appendix · A5</span>
+    <h2>Mapping pipelines</h2>
+    <div class="split">
+      <div>
+        <h3>Plio-SLAM with Unitree L1</h3>
+        <div class="cards c3">
+          <div class="card"><div class="num">01</div><div class="ct">Read clouds and IMU from LiDAR</div></div>
+          <div class="card"><div class="num">02</div><div class="ct">Extended Kalman filter SLAM</div></div>
+          <div class="card"><div class="num">03</div><div class="ct">Save the cloud in PCD</div></div>
+        </div>
+        <figure class="contain" style="margin-top:16px"><img src="assets/img/p30-000.jpg" alt="Plio-SLAM point cloud"></figure>
+      </div>
+      <div>
+        <h3>RTAB-Map with ZED camera</h3>
+        <div class="cards c3">
+          <div class="card"><div class="num">01</div><div class="ct">Read depth and IMU from the ZED camera</div></div>
+          <div class="card"><div class="num">02</div><div class="ct">Feature extraction, tracking &amp; IMU sensor fusion</div></div>
+          <div class="card"><div class="num">03</div><div class="ct">Save the cloud in PCD</div></div>
+        </div>
+        <figure class="contain" style="margin-top:16px"><img src="assets/img/p31-000.jpg" alt="RTAB-Map point cloud"></figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="kicker">Appendix · A6</span>
+    <h2>Creating the final map</h2>
+    <div class="split media-wide">
+      <div>
+        <div class="cards c3" style="grid-template-columns:1fr">
+          <div class="card"><div class="ct">Align camera and LiDAR clouds</div></div>
+          <div class="card"><div class="ct">Neighbor-search filtering</div></div>
+          <div class="card"><div class="ct">Save the cloud in PCD</div></div>
+        </div>
+      </div>
+      <figure class="contain"><img src="assets/img/p32-000.jpg" alt="Final fused point-cloud map">
+        <figcaption>Fused camera + LiDAR point cloud of the surveyed gallery</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="kicker">Appendix · A7</span>
+    <h2>Toward autonomy in the SPS survey</h2>
+    <div class="split media-wide">
+      <div>
+        <ul class="bul">
+          <li><b>Teleoperation</b> causes operator fatigue and increases operation time</li>
+          <li><b>Mira3</b> is capable of autonomously navigating through the tunnels</li>
+          <li>Two areas benefit most from autonomy: <b>BA6</b> (charging station to tunnel entrance) and the <b>Beam Area</b> (a dome-like structure)</li>
+        </ul>
+      </div>
+      <div class="stack">
+        <figure class="contain"><img src="assets/img/p33-000.jpg" alt="Challenging survey locations">
+          <figcaption>Challenging locations for autonomous radiation survey</figcaption></figure>
+        <figure class="contain"><img src="assets/img/p33-001.jpg" alt="Mira3 robot">
+          <figcaption>Mira3 robot — omnidirectional wheels, RP sensor and RPLiDAR A3</figcaption></figure>
+      </div>
+    </div>
+  </div>
+</section>
+</details>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <div style="font-weight:700;color:var(--text)">Robot Mapping and Navigation for Inspection Tasks in CERN Facilities</div>
+      <div>Pejman Habibiroudkenar · Helsinki Institute of Physics · Aalto University · Tampere University</div>
+    </div>
+    <a class="up" href="#top">Back to top ↑</a>
+  </div>
+</footer>
+
+<!-- ===================== LIVE SUBTITLES + VOICE CUE ===================== -->
+<div class="captions" id="captions" hidden aria-live="polite">
+  <span class="cap-dot" aria-hidden="true"></span>
+  <span class="cap-text" id="cap-text">Listening…</span>
+</div>
+<div class="voice-cue" id="voice-cue" aria-hidden="true"></div>
+
+<!-- ===================== SETTINGS ===================== -->
+<button class="settings-btn" id="settings-btn" aria-label="Display settings" aria-expanded="false" aria-controls="settings-panel">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3.2"/>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+  </svg>
+</button>
+<div class="settings-panel" id="settings-panel" role="dialog" aria-label="Display settings">
+  <div class="settings-group">
+    <h4>Text size</h4>
+    <div class="fs-row">
+      <span class="fs-a" style="font-size:13px">A</span>
+      <input type="range" id="set-fs" min="0.85" max="1.4" step="0.05" value="1" aria-label="Text size">
+      <span class="fs-a" style="font-size:21px">A</span>
+    </div>
+  </div>
+  <div class="settings-group">
+    <h4>Theme</h4>
+    <div class="seg" id="set-theme">
+      <button type="button" data-theme-opt="system">System</button>
+      <button type="button" data-theme-opt="light">Light</button>
+      <button type="button" data-theme-opt="dark">Dark</button>
+    </div>
+  </div>
+  <div class="settings-group">
+    <h4>Video speed</h4>
+    <div class="seg" id="set-speed">
+      <button type="button" data-speed-opt="0.5">0.5&times;</button>
+      <button type="button" data-speed-opt="1">1&times;</button>
+      <button type="button" data-speed-opt="1.5">1.5&times;</button>
+      <button type="button" data-speed-opt="2">2&times;</button>
+    </div>
+  </div>
+  <div class="settings-group">
+    <h4>Subtitles (from mic)</h4>
+    <div class="seg" id="set-cc">
+      <button type="button" data-cc="off">Off</button>
+      <button type="button" data-cc="on">On</button>
+    </div>
+    <div class="settings-note" id="cc-note"></div>
+  </div>
+  <div class="settings-group">
+    <h4>Voice control (beta)</h4>
+    <div class="seg" id="set-nav">
+      <button type="button" data-nav="off">Off</button>
+      <button type="button" data-nav="on">On</button>
+    </div>
+    <div class="settings-note" id="nav-note">Say “next”, “go back”, or a section name to jump there.</div>
+  </div>
+  <button type="button" class="settings-apply" id="settings-apply">Apply as default</button>
+  <button type="button" class="settings-reset" id="settings-reset">Reset to defaults</button>
+  <div class="settings-msg" id="settings-msg" aria-live="polite"></div>
+</div>
+
+<script>
+/* ---- click-to-enlarge lightbox ---- */
+(function(){
+  var lb = document.createElement('div');
+  lb.className = 'lb';
+  lb.innerHTML = '<div class="lb-close" aria-label="Close">✕</div><img alt="">';
+  document.body.appendChild(lb);
+  var lbImg = lb.querySelector('img');
+  function open(src, alt){ lbImg.src = src; lbImg.alt = alt || ''; lb.classList.add('open'); document.body.style.overflow='hidden'; }
+  function close(){ lb.classList.remove('open'); document.body.style.overflow=''; setTimeout(function(){ if(!lb.classList.contains('open')) lbImg.src=''; }, 260); }
+  document.querySelectorAll('figure img, .masonry img').forEach(function(img){
+    img.classList.add('zoomable');
+    img.addEventListener('click', function(){ open(img.currentSrc || img.src, img.alt); });
+  });
+  lb.addEventListener('click', close);
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') close(); });
+})();
+
+/* ---- scroll-reveal animations ---- */
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce) return;
+  var sel = 'section .kicker, section h2, section .lead, section > .wrap > p:not(.quiz-hint), section ul.bul,'
+          + ' .cards, .figs, .masonry, .collage, .wall, .opts, .metric, .video, .mapscta, .split .stack > *,'
+          + ' .divider .step, .divider h2, .divider .lead';
+  var nodes = Array.prototype.slice.call(document.querySelectorAll(sel));
+  nodes.forEach(function(el){ el.classList.add('reveal'); });
+  // gentle stagger within each block
+  document.querySelectorAll('section, .divider').forEach(function(sec){
+    sec.querySelectorAll(':scope .reveal').forEach(function(k,i){
+      k.style.transitionDelay = (Math.min(i,5) * 0.06) + 's';
+    });
+  });
+  if(!('IntersectionObserver' in window)){
+    nodes.forEach(function(el){ el.classList.add('in'); }); return;
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+  nodes.forEach(function(el){ io.observe(el); });
+})();
+
+/* ---- scroll progress bar ---- */
+(function(){
+  var bar = document.getElementById('progress');
+  if(!bar) return;
+  function update(){
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    var p = max > 0 ? (h.scrollTop || document.body.scrollTop) / max : 0;
+    bar.style.width = (p * 100).toFixed(2) + '%';
+  }
+  update();
+  addEventListener('scroll', update, {passive:true});
+  addEventListener('resize', update);
+})();
+
+/* ---- active nav link on scroll ---- */
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('.nav-links a[href^="#"]'));
+  if(!links.length || !('IntersectionObserver' in window)) return;
+  var map = {};
+  links.forEach(function(a){
+    var el = document.querySelector(a.getAttribute('href'));
+    if(el) map[el.id] = a;
+  });
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        links.forEach(function(a){ a.classList.remove('active'); });
+        if(map[e.target.id]) map[e.target.id].classList.add('active');
+      }
+    });
+  }, { rootMargin: '-45% 0px -50% 0px' });
+  Object.keys(map).forEach(function(id){ io.observe(document.getElementById(id)); });
+})();
+
+/* ---- mobile menu ---- */
+(function(){
+  var btn = document.getElementById('nav-toggle');
+  var menu = document.getElementById('nav-links');
+  if(!btn || !menu) return;
+  function set(open){ menu.classList.toggle('open', open); btn.setAttribute('aria-expanded', open ? 'true':'false'); }
+  btn.addEventListener('click', function(){ set(!menu.classList.contains('open')); });
+  menu.addEventListener('click', function(e){ if(e.target.tagName === 'A') set(false); });
+})();
+
+/* ---- interactive quiz ---- */
+(function(){
+  var quiz = document.getElementById('quiz');
+  var hint = document.getElementById('quiz-hint');
+  if(!quiz) return;
+  var opts = Array.prototype.slice.call(quiz.querySelectorAll('.opt'));
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var answered = false;
+  opts.forEach(function(opt){
+    opt.addEventListener('click', function(){
+      var isCorrect = opt.hasAttribute('data-correct');
+      if(!isCorrect){
+        opt.classList.add('wrong');
+        if(!reduce){ opt.classList.remove('shake'); void opt.offsetWidth; opt.classList.add('shake'); }
+      }
+      if(answered) return;
+      // first answer: always reveal the correct one
+      opts.forEach(function(o){
+        if(o.hasAttribute('data-correct')){ o.classList.add('correct','reveal-correct'); }
+      });
+      if(hint) hint.classList.add('show');
+      answered = true;
+    });
+  });
+})();
+
+/* ---- count-up numbers ---- */
+(function(){
+  var els = Array.prototype.slice.call(document.querySelectorAll('.count'));
+  if(!els.length) return;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function run(el){
+    var to = parseFloat(el.getAttribute('data-to'));
+    var dec = parseInt(el.getAttribute('data-dec') || '0', 10);
+    if(isNaN(to)) return;
+    if(reduce){ el.textContent = to.toFixed(dec); return; }
+    var start = null, dur = 1100;
+    function frame(t){
+      if(start === null) start = t;
+      var k = Math.min((t - start) / dur, 1);
+      var eased = 1 - Math.pow(1 - k, 3);
+      el.textContent = (to * eased).toFixed(dec);
+      if(k < 1) requestAnimationFrame(frame);
+      else el.textContent = to.toFixed(dec);
+    }
+    requestAnimationFrame(frame);
+  }
+  if(!('IntersectionObserver' in window)){ els.forEach(run); return; }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if(e.isIntersecting){ run(e.target); io.unobserve(e.target); } });
+  }, { threshold: 0.6 });
+  els.forEach(function(el){ io.observe(el); });
+})();
+
+/* ---- play videos only while on screen ---- */
+(function(){
+  var vids = Array.prototype.slice.call(document.querySelectorAll('video'));
+  if(!vids.length) return;
+  if(!('IntersectionObserver' in window)){ return; }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      var v = e.target;
+      if(e.isIntersecting){ var p = v.play(); if(p && p.catch) p.catch(function(){}); }
+      else { v.pause(); }
+    });
+  }, { threshold: 0.35 });
+  vids.forEach(function(v){ io.observe(v); });
+})();
+
+/* ---- scroll focus: dim + blur the blocks you're not reading ---- */
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce) return;
+  var blocks = Array.prototype.slice.call(document.querySelectorAll('section, .divider'));
+  blocks.forEach(function(b){ b.classList.add('focusable'); });
+  var ticking = false;
+  function update(){
+    ticking = false;
+    var mid = window.innerHeight / 2, best = null, bestD = Infinity;
+    blocks.forEach(function(b){
+      var r = b.getBoundingClientRect();
+      if(r.height === 0 || r.bottom < 0 || r.top > window.innerHeight) return;
+      var d = Math.abs((r.top + r.bottom) / 2 - mid);
+      if(d < bestD){ bestD = d; best = b; }
+    });
+    blocks.forEach(function(b){ b.classList.toggle('dim', b !== best); });
+  }
+  addEventListener('scroll', function(){ if(!ticking){ ticking = true; requestAnimationFrame(update); } }, {passive:true});
+  addEventListener('resize', update);
+  update();
+})();
+
+/* ---- appendix box: ensure content is revealed when opened ---- */
+(function(){
+  var box = document.getElementById('appendix-box');
+  if(!box) return;
+  box.addEventListener('toggle', function(){
+    if(box.open){
+      box.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in'); });
+      window.dispatchEvent(new Event('scroll'));
+    }
+  });
+})();
+
+/* ---- settings panel: text size, theme, video speed ---- */
+(function(){
+  /* Baked-in factory defaults. Edit this line to change how the page opens for
+     everyone; the "Apply as default" button copies a ready-to-paste version. */
+  var SITE_DEFAULTS = { fs: 1, theme: 'system', speed: 1 };
+
+  var LSK = 'cern-robotics-settings';       // last-used settings (this browser)
+  var DEFAULTS_KEY = 'cern-robotics-defaults'; // user-applied defaults (this browser)
+  function read(key){ try{ return JSON.parse(localStorage.getItem(key)) || {}; }catch(e){ return {}; } }
+  var applied = read(DEFAULTS_KEY);
+  var def = { fs: applied.fs != null ? applied.fs : SITE_DEFAULTS.fs,
+              theme: applied.theme || SITE_DEFAULTS.theme,
+              speed: applied.speed != null ? applied.speed : SITE_DEFAULTS.speed };
+  var saved = read(LSK);
+  var root = document.documentElement;
+  var fs = typeof saved.fs === 'number' ? saved.fs : def.fs;
+  var theme = saved.theme || def.theme;
+  var speed = typeof saved.speed === 'number' ? saved.speed : def.speed;
+  window.__vspeed = speed;
+
+  function applyFs(v){ root.style.setProperty('--fs', v); }
+  function applyTheme(t){ if(t === 'system') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', t); }
+  function applySpeed(s){ document.querySelectorAll('video').forEach(function(v){ try{ v.playbackRate = s; }catch(e){} }); }
+  function save(){ try{ localStorage.setItem(LSK, JSON.stringify({fs:fs, theme:theme, speed:speed})); }catch(e){} }
+
+  applyFs(fs); applyTheme(theme);
+  // keep chosen speed whenever a clip starts (the on-screen observer calls play())
+  document.querySelectorAll('video').forEach(function(v){
+    v.addEventListener('play', function(){ try{ v.playbackRate = window.__vspeed; }catch(e){} });
+  });
+  applySpeed(speed);
+
+  var btn = document.getElementById('settings-btn');
+  var panel = document.getElementById('settings-panel');
+  if(!btn || !panel) return;
+  function toggle(open){ panel.classList.toggle('open', open); btn.setAttribute('aria-expanded', open ? 'true' : 'false'); }
+  btn.addEventListener('click', function(e){ e.stopPropagation(); toggle(!panel.classList.contains('open')); });
+  document.addEventListener('click', function(e){ if(panel.classList.contains('open') && !panel.contains(e.target) && e.target !== btn && !btn.contains(e.target)) toggle(false); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') toggle(false); });
+
+  var slider = document.getElementById('set-fs');
+  slider.value = fs;
+  slider.addEventListener('input', function(){ fs = parseFloat(slider.value); applyFs(fs); save(); });
+
+  function setActive(container, attr, val){
+    container.querySelectorAll('button').forEach(function(b){ b.classList.toggle('active', b.getAttribute(attr) === val); });
+  }
+  function wireSeg(container, attr, curVal, onPick){
+    setActive(container, attr, curVal);
+    container.querySelectorAll('button').forEach(function(b){
+      b.addEventListener('click', function(){
+        container.querySelectorAll('button').forEach(function(x){ x.classList.remove('active'); });
+        b.classList.add('active'); onPick(b); save();
+      });
+    });
+  }
+  wireSeg(document.getElementById('set-theme'), 'data-theme-opt', theme,
+    function(b){ theme = b.getAttribute('data-theme-opt'); applyTheme(theme); });
+  wireSeg(document.getElementById('set-speed'), 'data-speed-opt', String(speed),
+    function(b){ speed = parseFloat(b.getAttribute('data-speed-opt')); window.__vspeed = speed; applySpeed(speed); });
+
+  var msg = document.getElementById('settings-msg');
+  var msgTimer;
+  function flash(text){ if(!msg) return; msg.textContent = text; msg.classList.add('show');
+    clearTimeout(msgTimer); msgTimer = setTimeout(function(){ msg.classList.remove('show'); }, 2800); }
+
+  // Apply as default — remember current choices as how the page opens, and copy
+  // a config line so they can be baked permanently into the file.
+  var applyBtn = document.getElementById('settings-apply');
+  if(applyBtn){
+    applyBtn.addEventListener('click', function(){
+      try{ localStorage.setItem(DEFAULTS_KEY, JSON.stringify({fs:fs, theme:theme, speed:speed})); }catch(e){}
+      save();
+      var line = "var SITE_DEFAULTS = { fs: " + fs + ", theme: '" + theme + "', speed: " + speed + " };";
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(line).then(function(){ flash('Saved as default · config copied'); },
+                                                 function(){ flash('Saved as default'); });
+      } else { flash('Saved as default'); }
+    });
+  }
+
+  // Reset to defaults — back to the baked-in factory defaults, forget overrides.
+  var resetBtn = document.getElementById('settings-reset');
+  if(resetBtn){
+    resetBtn.addEventListener('click', function(){
+      fs = SITE_DEFAULTS.fs; theme = SITE_DEFAULTS.theme; speed = SITE_DEFAULTS.speed; window.__vspeed = speed;
+      slider.value = fs; applyFs(fs); applyTheme(theme); applySpeed(speed);
+      setActive(document.getElementById('set-theme'), 'data-theme-opt', theme);
+      setActive(document.getElementById('set-speed'), 'data-speed-opt', String(speed));
+      try{ localStorage.removeItem(LSK); localStorage.removeItem(DEFAULTS_KEY); }catch(e){}
+      if(window.__ccOff) window.__ccOff();
+      flash('Reset to defaults');
+    });
+  }
+})();
+
+/* ---- voice engine: live subtitles + voice navigation (Web Speech API) ---- */
+(function(){
+  var ccSeg = document.getElementById('set-cc');
+  var navSeg = document.getElementById('set-nav');
+  var bar = document.getElementById('captions');
+  var textEl = document.getElementById('cap-text');
+  var ccNote = document.getElementById('cc-note');
+  var navNote = document.getElementById('nav-note');
+  var cue = document.getElementById('voice-cue');
+  if(!bar || !textEl) return;
+
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var ccBtns = ccSeg ? Array.prototype.slice.call(ccSeg.querySelectorAll('button')) : [];
+  var navBtns = navSeg ? Array.prototype.slice.call(navSeg.querySelectorAll('button')) : [];
+  function setSeg(btns, attr, val){ btns.forEach(function(b){ b.classList.toggle('active', b.getAttribute(attr) === val); }); }
+  setSeg(ccBtns, 'data-cc', 'off'); setSeg(navBtns, 'data-nav', 'off');
+
+  if(!SR){
+    ccBtns.concat(navBtns).forEach(function(b){ b.disabled = true; b.style.opacity = .5; b.style.cursor = 'not-allowed'; });
+    if(ccNote) ccNote.textContent = 'Not supported in this browser — try Chrome or Edge.';
+    if(navNote) navNote.textContent = 'Not supported in this browser — try Chrome or Edge.';
+    return;
+  }
+
+  var rec = null, running = false, ccOn = false, navOn = false, finalText = '';
+
+  /* ----- captions ----- */
+  function escapeHtml(s){ return s.replace(/[&<>]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]; }); }
+  function render(interim){
+    var html = escapeHtml(finalText);
+    if(interim) html += (finalText ? ' ' : '') + '<span class="interim">' + escapeHtml(interim) + '</span>';
+    textEl.innerHTML = html || 'Listening…';
+    textEl.scrollLeft = textEl.scrollWidth;
+  }
+
+  /* ----- navigation model ----- */
+  var blocks = Array.prototype.slice.call(document.querySelectorAll('section, .divider'));
+  var NAVH = 66;
+  function scrollToEl(el){ var y = el.getBoundingClientRect().top + window.scrollY - NAVH; window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' }); }
+  function currentIndex(){
+    var pos = window.scrollY + NAVH + 12, idx = 0;
+    for(var i = 0; i < blocks.length; i++){
+      if(blocks[i].getBoundingClientRect().top + window.scrollY <= pos) idx = i; else break;
+    }
+    return idx;
+  }
+  function go(d){ var i = Math.max(0, Math.min(blocks.length - 1, currentIndex() + d)); scrollToEl(blocks[i]); }
+  var named = [
+    { id:'overview', kw:['overview','why use robotics','motivation','opening question'] },
+    { id:'charm',    kw:['charm gui','teleoperation gui','charm facility','charm teleoperation','charm'] },
+    { id:'sps',      kw:['sps survey','sps radiation','radiation survey','sextant','sps ring'] },
+    { id:'lidar',    kw:['non repetitive','lidar mapping','lidar inertial','odometry','nrlio','lidar'] },
+    { id:'appendix', kw:['appendix','extra materials'] }
+  ];
+  function cueFlash(msg){ if(!cue) return; cue.textContent = msg; cue.classList.add('show');
+    clearTimeout(cue._t); cue._t = setTimeout(function(){ cue.classList.remove('show'); }, 1200); }
+
+  var STOP = {the:1,a:1,an:1,and:1,or:1,of:1,to:1,in:1,on:1,for:1,with:1,is:1,are:1,was:1,were:1,it:1,this:1,that:1,at:1,by:1,as:1,be:1,from:1,we:1,you:1,our:1,its:1,which:1,using:1,used:1,into:1};
+  function norm(s){ return s.toLowerCase().replace(/[^a-z0-9\s]/g,' ').split(/\s+/).filter(function(w){ return w && !STOP[w] && w.length > 2; }); }
+  function trigrams(words){ var t = {}; for(var i = 0; i < words.length - 2; i++) t[words[i]+' '+words[i+1]+' '+words[i+2]] = 1; return t; }
+  var index = blocks.map(function(el){
+    var t = '';
+    var h = el.querySelector('h2,h3'); if(h) t += ' ' + h.textContent;
+    var k = el.querySelector('.kicker,.step'); if(k) t += ' ' + k.textContent;
+    var ps = el.querySelectorAll('p,li'); for(var i = 0; i < Math.min(ps.length,4); i++) t += ' ' + ps[i].textContent;
+    return { el: el, tris: trigrams(norm(t)) };
+  });
+
+  var lastJump = 0;
+  function handleCommand(phrase){
+    var p = ' ' + phrase.toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim() + ' ';
+    if(/\b(next slide|next section|moving on|move on|go on|next|continue|advance)\b/.test(p)){ go(1); cueFlash('Next ▸'); return true; }
+    if(/\b(previous slide|previous section|go back|last slide|previous|back up|back)\b/.test(p)){ go(-1); cueFlash('◂ Back'); return true; }
+    if(/\b(top|beginning|start over|the start)\b/.test(p)){ window.scrollTo({ top:0, behavior:'smooth' }); cueFlash('Top'); return true; }
+    for(var i = 0; i < named.length; i++){
+      for(var j = 0; j < named[i].kw.length; j++){
+        if(p.indexOf(' ' + named[i].kw[j] + ' ') >= 0){
+          var el = document.getElementById(named[i].id);
+          if(el){ scrollToEl(el); var h = el.querySelector('h2'); cueFlash('▸ ' + (h ? h.textContent : named[i].id)); return true; }
+        }
+      }
+    }
+    return false;
+  }
+  function followContent(phrase){
+    var words = norm(phrase); if(words.length < 3) return;
+    var keys = Object.keys(trigrams(words)); if(!keys.length) return;
+    var best = -1, bestScore = 0;
+    for(var i = 0; i < index.length; i++){
+      var s = 0; for(var k = 0; k < keys.length; k++){ if(index[i].tris[keys[k]]) s++; }
+      if(s > bestScore){ bestScore = s; best = i; }
+    }
+    if(best >= 0 && bestScore >= 2 && index[best].el !== blocks[currentIndex()]){ scrollToEl(index[best].el); cueFlash('▸ following'); }
+  }
+  function processFinal(phrase){
+    var now = Date.now();
+    if(handleCommand(phrase)){ lastJump = now; return; }
+    if(now - lastJump > 1200){ var before = currentIndex(); followContent(phrase); if(currentIndex() !== before) lastJump = now; }
+  }
+
+  /* ----- recognition lifecycle (shared by both features) ----- */
+  function startRec(){
+    rec = new SR(); rec.continuous = true; rec.interimResults = true; rec.lang = 'en-US';
+    rec.onresult = function(e){
+      var interim = '';
+      for(var i = e.resultIndex; i < e.results.length; i++){
+        var r = e.results[i];
+        if(r.isFinal){
+          var f = r[0].transcript.trim();
+          if(ccOn){ finalText += (finalText && !/\s$/.test(finalText) ? ' ' : '') + f; if(finalText.length > 240) finalText = '… ' + finalText.slice(finalText.length - 220); }
+          if(navOn) processFinal(f);
+        } else interim += r[0].transcript;
+      }
+      if(ccOn) render(interim);
+    };
+    rec.onerror = function(e){
+      if(e.error === 'not-allowed' || e.error === 'service-not-allowed'){
+        if(ccNote && ccOn) ccNote.textContent = 'Microphone access blocked.';
+        if(navNote && navOn) navNote.textContent = 'Microphone access blocked.';
+        ccOn = false; navOn = false; setSeg(ccBtns,'data-cc','off'); setSeg(navBtns,'data-nav','off'); bar.hidden = true; stopRec();
+      }
+    };
+    rec.onend = function(){ if(running){ try{ rec.start(); }catch(err){} } };
+    try{ rec.start(); running = true; }catch(err){ running = false; }
+  }
+  function stopRec(){ running = false; if(rec){ try{ rec.onend = null; rec.stop(); }catch(e){} rec = null; } }
+  function ensure(){ if((ccOn || navOn) && !running) startRec(); else if(!(ccOn || navOn) && running) stopRec(); }
+
+  window.__ccOff = function(){ ccOn = false; navOn = false; setSeg(ccBtns,'data-cc','off'); setSeg(navBtns,'data-nav','off'); bar.hidden = true; if(cue) cue.classList.remove('show'); ensure(); };
+
+  ccBtns.forEach(function(b){ b.addEventListener('click', function(){
+    ccOn = b.getAttribute('data-cc') === 'on'; setSeg(ccBtns,'data-cc', ccOn ? 'on' : 'off');
+    if(ccOn){ finalText = ''; render(''); bar.hidden = false; if(ccNote) ccNote.textContent = 'Listening… speak into your microphone.'; }
+    else { bar.hidden = true; if(ccNote) ccNote.textContent = ''; }
+    ensure();
+  }); });
+  navBtns.forEach(function(b){ b.addEventListener('click', function(){
+    navOn = b.getAttribute('data-nav') === 'on'; setSeg(navBtns,'data-nav', navOn ? 'on' : 'off');
+    if(navNote) navNote.textContent = navOn ? 'Listening — say “next”, “go back”, or a section name.' : 'Say “next”, “go back”, or a section name to jump there.';
+    ensure();
+  }); });
+})();
+</script>
+
+<!-- Three.js for the interactive point-cloud map viewer -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module" src="assets/viewer.js"></script>
+</body>
+</html>
