@@ -428,6 +428,34 @@ figure.contain figcaption{padding:2px 4px 2px}
 /* ---------- takeaways cards ---------- */
 .card .cs{font-weight:500;font-size:14.5px;line-height:1.45;color:var(--card-num);margin-top:10px}
 
+/* ---------- publications ---------- */
+.pubs{display:grid;gap:16px;margin:26px 0 4px;grid-template-columns:repeat(2,1fr)}
+.pub{display:flex;gap:18px;align-items:flex-start;padding:20px;
+  border:1px solid var(--line);border-radius:var(--radius);background:var(--bg);
+  transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease}
+.pub:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--accent)}
+.pub .qr{flex:0 0 auto;width:104px;height:104px;padding:8px;border-radius:10px;
+  background:#fff;border:1px solid var(--line);box-sizing:border-box}
+.pub .qr img{display:block;width:100%;height:100%}
+.pub-body{min-width:0}
+.pub-venue{font-size:12.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--accent);margin:0 0 7px}
+.pub-title{font-size:15.5px;font-weight:600;line-height:1.4;margin:0 0 8px;color:var(--text)}
+.pub-title a{color:inherit}
+.pub-title a:hover{color:var(--accent-dark)}
+.pub-scan{font-size:13px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+.pub-scan svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+@media(max-width:820px){.pubs{grid-template-columns:1fr}}
+@media(max-width:520px){.pub{flex-direction:column;align-items:center;text-align:center}
+  .pub-scan{justify-content:center}}
+/* profile QR (LinkedIn) */
+.profile-qr{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:22px}
+.profile-qr .qr{width:150px;height:150px;padding:10px;border-radius:12px;background:#fff;
+  border:1px solid var(--line);box-sizing:border-box}
+.profile-qr .qr img{display:block;width:100%;height:100%}
+.profile-qr .pq-label{font-size:15px;font-weight:600;color:var(--text)}
+.profile-qr .pq-label a{color:var(--accent-dark)}
+
 /* ---------- hero scroll cue ---------- */
 .scrollcue{display:inline-flex;align-items:center;gap:8px;margin-top:30px;color:var(--muted);
   font-size:14px;font-weight:600;letter-spacing:.02em}
@@ -577,6 +605,7 @@ footer{font-size:.88em}
       <a href="#charm">CHARM GUI</a>
       <a href="#sps">SPS Survey</a>
       <a href="#lidar">LiDAR Mapping</a>
+      <a href="#publications">Publications</a>
       <a href="#appendix">Appendix</a>
     </div>
   </div>
@@ -1074,6 +1103,59 @@ footer{font-size:.88em}
     <p class="lead" style="margin:18px auto 0">Pejman Habibiroudkenar · Helsinki Institute of Physics</p>
   </div>
 </div>
+
+<!-- ===================== PUBLICATIONS ===================== -->
+<section id="publications">
+  <div class="wrap">
+    <span class="kicker">Read the papers</span>
+    <h2>Publications</h2>
+    <p class="lead">Scan a QR code to open the paper.</p>
+    <div class="pubs">
+
+      <div class="pub">
+        <span class="qr"><img src="assets/img/qr/dynahull.svg" alt="QR code linking to the DynaHull paper" loading="lazy"></span>
+        <div class="pub-body">
+          <p class="pub-venue">J. Intell. Robot. Syst. · 2024</p>
+          <p class="pub-title"><a href="https://link.springer.com/article/10.1007/s10846-024-02203-2" target="_blank" rel="noopener">DynaHull: Density-centric dynamic point filtering in point clouds</a></p>
+          <span class="pub-scan"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v7M17 21h4"/></svg>Scan to read</span>
+        </div>
+      </div>
+
+      <div class="pub">
+        <span class="qr"><img src="assets/img/qr/charm.svg" alt="QR code linking to the CHARM autonomy paper" loading="lazy"></span>
+        <div class="pub-body">
+          <p class="pub-venue">ICINCO · 2024</p>
+          <p class="pub-title"><a href="https://www.scitepress.org/publishedPapers/2024/130201/pdf/index.html" target="_blank" rel="noopener">Towards Increasing Robot Autonomy in CHARM Facility: Network Performance, 3D Perception, and Human Robot Interface</a></p>
+          <span class="pub-scan"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v7M17 21h4"/></svg>Scan to read</span>
+        </div>
+      </div>
+
+      <div class="pub">
+        <span class="qr"><img src="assets/img/qr/sps.svg" alt="QR code linking to the SPS robotic radiation survey paper" loading="lazy"></span>
+        <div class="pub-body">
+          <p class="pub-venue">J. Intell. Robot. Syst. · 2025</p>
+          <p class="pub-title"><a href="https://link.springer.com/article/10.1007/s10846-025-02342-0" target="_blank" rel="noopener">Towards autonomous execution of safe and precise robotic radiation surveys in the super proton synchrotron</a></p>
+          <span class="pub-scan"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v7M17 21h4"/></svg>Scan to read</span>
+        </div>
+      </div>
+
+      <div class="pub">
+        <span class="qr"><img src="assets/img/qr/lidar.svg" alt="QR code linking to the non-repetitive LiDAR odometry paper" loading="lazy"></span>
+        <div class="pub-body">
+          <p class="pub-venue">IEEE Access · 2026</p>
+          <p class="pub-title"><a href="https://vbn.aau.dk/en/publications/non-repetitive-scan-correction-for-lidar-odometry-via-spatial-ana/" target="_blank" rel="noopener">Non-Repetitive Scan Correction for LiDAR Odometry via Spatial Analysis in CERN Facilities</a></p>
+          <span class="pub-scan"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v7M17 21h4"/></svg>Scan to read</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="profile-qr">
+      <span class="qr"><img src="assets/img/qr/linkedin.svg" alt="QR code linking to Pejman Habibiroudkenar's LinkedIn profile" loading="lazy"></span>
+      <p class="pq-label">Connect on <a href="https://www.linkedin.com/in/pejman-habibiroudkenar-003119217/" target="_blank" rel="noopener">LinkedIn</a></p>
+    </div>
+  </div>
+</section>
 
 <!-- ===================== APPENDIX ===================== -->
 <section class="appendix-intro" id="appendix">
