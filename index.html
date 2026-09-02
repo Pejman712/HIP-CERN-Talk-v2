@@ -428,6 +428,14 @@ figure.contain figcaption{padding:2px 4px 2px}
 /* ---------- takeaways cards ---------- */
 .card .cs{font-weight:500;font-size:14.5px;line-height:1.45;color:var(--card-num);margin-top:10px}
 
+/* ---------- read-along highlight ---------- */
+.ra-w{transition:color .12s ease}
+.ra-w.read{color:#e0242b}
+.ra-w.now{color:#e0242b;font-weight:600}
+:root[data-theme="dark"] .ra-w.read,:root[data-theme="dark"] .ra-w.now{color:#ff5a60}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .ra-w.read,:root:not([data-theme="light"]) .ra-w.now{color:#ff5a60}}
+@media(prefers-reduced-motion:reduce){.ra-w{transition:none}}
+
 /* ---------- publications ---------- */
 .pubs{display:grid;gap:16px;margin:26px 0 4px;grid-template-columns:repeat(2,1fr)}
 .pub{display:flex;gap:18px;align-items:flex-start;padding:20px;
@@ -1396,6 +1404,14 @@ footer{font-size:.88em}
     </div>
     <div class="settings-note" id="nav-note">Say “next”, “go back”, or a section name to jump there.</div>
   </div>
+  <div class="settings-group">
+    <h4>Read-along highlight</h4>
+    <div class="seg" id="set-read">
+      <button type="button" data-read="off">Off</button>
+      <button type="button" data-read="on">On</button>
+    </div>
+    <div class="settings-note" id="read-note">As you read the slide aloud, the words you speak turn red.</div>
+  </div>
   <button type="button" class="settings-apply" id="settings-apply">Apply as default</button>
   <button type="button" class="settings-reset" id="settings-reset">Reset to defaults</button>
   <div class="settings-msg" id="settings-msg" aria-live="polite"></div>
@@ -1694,6 +1710,8 @@ footer{font-size:.88em}
 (function(){
   var ccSeg = document.getElementById('set-cc');
   var navSeg = document.getElementById('set-nav');
+  var readSeg = document.getElementById('set-read');
+  var readNote = document.getElementById('read-note');
   var bar = document.getElementById('captions');
   var textEl = document.getElementById('cap-text');
   var ccNote = document.getElementById('cc-note');
@@ -1704,17 +1722,19 @@ footer{font-size:.88em}
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   var ccBtns = ccSeg ? Array.prototype.slice.call(ccSeg.querySelectorAll('button')) : [];
   var navBtns = navSeg ? Array.prototype.slice.call(navSeg.querySelectorAll('button')) : [];
+  var readBtns = readSeg ? Array.prototype.slice.call(readSeg.querySelectorAll('button')) : [];
   function setSeg(btns, attr, val){ btns.forEach(function(b){ b.classList.toggle('active', b.getAttribute(attr) === val); }); }
-  setSeg(ccBtns, 'data-cc', 'off'); setSeg(navBtns, 'data-nav', 'off');
+  setSeg(ccBtns, 'data-cc', 'off'); setSeg(navBtns, 'data-nav', 'off'); setSeg(readBtns, 'data-read', 'off');
 
   if(!SR){
-    ccBtns.concat(navBtns).forEach(function(b){ b.disabled = true; b.style.opacity = .5; b.style.cursor = 'not-allowed'; });
+    ccBtns.concat(navBtns).concat(readBtns).forEach(function(b){ b.disabled = true; b.style.opacity = .5; b.style.cursor = 'not-allowed'; });
     if(ccNote) ccNote.textContent = 'Not supported in this browser — try Chrome or Edge.';
     if(navNote) navNote.textContent = 'Not supported in this browser — try Chrome or Edge.';
+    if(readNote) readNote.textContent = 'Not supported in this browser — try Chrome or Edge.';
     return;
   }
 
-  var rec = null, running = false, ccOn = false, navOn = false, finalText = '';
+  var rec = null, running = false, ccOn = false, navOn = false, readOn = false, finalText = '';
 
   /* ----- captions ----- */
   function escapeHtml(s){ return s.replace(/[&<>]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]; }); }
@@ -1790,6 +1810,114 @@ footer{font-size:.88em}
     if(now - lastJump > 1200){ var before = currentIndex(); followContent(phrase); if(currentIndex() !== before) lastJump = now; }
   }
 
+  /* ----- read-along highlight (karaoke) ----- */
+  var RA_WIN = 6;                 // how far ahead a spoken word may match
+  var raBlock = null;            // block currently being highlighted
+  var raWords = [];              // ordered .ra-w spans in raBlock
+  var raPtr = 0;                 // next slide word to match
+  var raSeg = -1, raSegUsed = 0; // interim-segment tracking so each token is fed once
+  var raAdvancedAt = 0;         // timestamp of last auto block-advance
+  var RA_SKIP = { BUTTON:1, SCRIPT:1, STYLE:1, CANVAS:1, NOSCRIPT:1, SVG:1 };
+
+  function raNorm(t){ return t.toLowerCase().replace(/[^a-z0-9]/g,''); }
+  function raMatch(slide, spoken){
+    if(!slide || !spoken) return false;
+    if(slide === spoken) return true;
+    if(slide.length >= 4 && spoken.length >= 4 && (slide.indexOf(spoken) === 0 || spoken.indexOf(slide) === 0)) return true;
+    return false;
+  }
+  function raWrap(block){
+    if(block.getAttribute('data-ra') === '1') return;
+    block.setAttribute('data-ra', '1');
+    var walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT, {
+      acceptNode: function(n){
+        if(!n.nodeValue || !/\S/.test(n.nodeValue)) return NodeFilter.FILTER_REJECT;
+        var p = n.parentNode;
+        while(p && p !== block){
+          if(RA_SKIP[p.nodeName] || (p.classList && p.classList.contains('ra-w'))) return NodeFilter.FILTER_REJECT;
+          p = p.parentNode;
+        }
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    var nodes = [], n;
+    while((n = walker.nextNode())) nodes.push(n);
+    nodes.forEach(function(node){
+      var frag = document.createDocumentFragment();
+      node.nodeValue.split(/(\s+)/).forEach(function(part){
+        if(!part) return;
+        if(/^\s+$/.test(part)){ frag.appendChild(document.createTextNode(part)); return; }
+        var span = document.createElement('span');
+        span.className = 'ra-w';
+        span.setAttribute('data-w', raNorm(part));
+        span.textContent = part;
+        frag.appendChild(span);
+      });
+      node.parentNode.replaceChild(frag, node);
+    });
+  }
+  function raClear(){
+    if(raBlock){ Array.prototype.forEach.call(raBlock.querySelectorAll('.ra-w.read,.ra-w.now'), function(s){ s.classList.remove('read','now'); }); }
+    raPtr = 0; raSeg = -1; raSegUsed = 0;
+  }
+  function raSetBlock(block){
+    if(!block) return;
+    raClear();
+    raBlock = block;
+    raWrap(block);
+    raWords = Array.prototype.slice.call(block.querySelectorAll('.ra-w'));
+    raPtr = 0;
+  }
+  function raPaintTo(k){
+    for(var m = raPtr; m <= k; m++){ if(raWords[m]) raWords[m].classList.add('read'); }
+    Array.prototype.forEach.call(raBlock.querySelectorAll('.ra-w.now'), function(s){ s.classList.remove('now'); });
+    if(raWords[k]) raWords[k].classList.add('now');
+  }
+  function raAdvanceBlock(){
+    var i = blocks.indexOf(raBlock);
+    if(i < 0 || i + 1 >= blocks.length) return false;
+    var next = blocks[i + 1];
+    raSetBlock(next);
+    raAdvancedAt = Date.now();
+    scrollToEl(next);
+    return true;
+  }
+  function raFeedTokens(tokens){
+    if(!raBlock) return;
+    for(var ti = 0; ti < tokens.length; ti++){
+      var t = tokens[ti];
+      if(!t) continue;
+      if(raPtr >= raWords.length){ if(!raAdvanceBlock()) return; }
+      var limit = Math.min(raPtr + RA_WIN, raWords.length), matched = -1;
+      for(var k = raPtr; k < limit; k++){
+        if(raMatch(raWords[k].getAttribute('data-w'), t)){ matched = k; break; }
+      }
+      if(matched >= 0){ raPaintTo(matched); raPtr = matched + 1;
+        if(raPtr >= raWords.length){ /* wait for next token before advancing */ } }
+    }
+  }
+  function raSyncBlock(){
+    if(Date.now() - raAdvancedAt < 1500) return; // let an auto-advance scroll settle
+    var cur = blocks[currentIndex()];
+    if(cur && cur !== raBlock) raSetBlock(cur);
+  }
+  function raOnResult(e){
+    raSyncBlock();
+    for(var i = e.resultIndex; i < e.results.length; i++){
+      var r = e.results[i];
+      var toks = raNorm(r[0].transcript).length ? r[0].transcript.trim().split(/\s+/).map(raNorm).filter(Boolean) : [];
+      if(r.isFinal){
+        var start = (i === raSeg) ? raSegUsed : 0;
+        raFeedTokens(toks.slice(start));
+        raSeg = -1; raSegUsed = 0;
+      } else {
+        if(i !== raSeg){ raSeg = i; raSegUsed = 0; }
+        raFeedTokens(toks.slice(raSegUsed));
+        raSegUsed = toks.length;
+      }
+    }
+  }
+
   /* ----- recognition lifecycle (shared by both features) ----- */
   function startRec(){
     rec = new SR(); rec.continuous = true; rec.interimResults = true; rec.lang = 'en-US';
@@ -1804,21 +1932,22 @@ footer{font-size:.88em}
         } else interim += r[0].transcript;
       }
       if(ccOn) render(interim);
+      if(readOn) raOnResult(e);
     };
     rec.onerror = function(e){
       if(e.error === 'not-allowed' || e.error === 'service-not-allowed'){
         if(ccNote && ccOn) ccNote.textContent = 'Microphone access blocked.';
         if(navNote && navOn) navNote.textContent = 'Microphone access blocked.';
-        ccOn = false; navOn = false; setSeg(ccBtns,'data-cc','off'); setSeg(navBtns,'data-nav','off'); bar.hidden = true; stopRec();
+        ccOn = false; navOn = false; readOn = false; setSeg(ccBtns,'data-cc','off'); setSeg(navBtns,'data-nav','off'); setSeg(readBtns,'data-read','off'); bar.hidden = true; raClear(); stopRec();
       }
     };
     rec.onend = function(){ if(running){ try{ rec.start(); }catch(err){} } };
     try{ rec.start(); running = true; }catch(err){ running = false; }
   }
   function stopRec(){ running = false; if(rec){ try{ rec.onend = null; rec.stop(); }catch(e){} rec = null; } }
-  function ensure(){ if((ccOn || navOn) && !running) startRec(); else if(!(ccOn || navOn) && running) stopRec(); }
+  function ensure(){ var want = ccOn || navOn || readOn; if(want && !running) startRec(); else if(!want && running) stopRec(); }
 
-  window.__ccOff = function(){ ccOn = false; navOn = false; setSeg(ccBtns,'data-cc','off'); setSeg(navBtns,'data-nav','off'); bar.hidden = true; if(cue) cue.classList.remove('show'); ensure(); };
+  window.__ccOff = function(){ ccOn = false; navOn = false; readOn = false; setSeg(ccBtns,'data-cc','off'); setSeg(navBtns,'data-nav','off'); setSeg(readBtns,'data-read','off'); bar.hidden = true; raClear(); if(cue) cue.classList.remove('show'); ensure(); };
 
   ccBtns.forEach(function(b){ b.addEventListener('click', function(){
     ccOn = b.getAttribute('data-cc') === 'on'; setSeg(ccBtns,'data-cc', ccOn ? 'on' : 'off');
@@ -1829,6 +1958,12 @@ footer{font-size:.88em}
   navBtns.forEach(function(b){ b.addEventListener('click', function(){
     navOn = b.getAttribute('data-nav') === 'on'; setSeg(navBtns,'data-nav', navOn ? 'on' : 'off');
     if(navNote) navNote.textContent = navOn ? 'Listening — say “next”, “go back”, or a section name.' : 'Say “next”, “go back”, or a section name to jump there.';
+    ensure();
+  }); });
+  readBtns.forEach(function(b){ b.addEventListener('click', function(){
+    readOn = b.getAttribute('data-read') === 'on'; setSeg(readBtns,'data-read', readOn ? 'on' : 'off');
+    if(readOn){ raSetBlock(blocks[currentIndex()]); if(readNote) readNote.textContent = 'Listening — read the slide aloud and the words turn red.'; }
+    else { raClear(); if(readNote) readNote.textContent = 'As you read the slide aloud, the words you speak turn red.'; }
     ensure();
   }); });
 })();
