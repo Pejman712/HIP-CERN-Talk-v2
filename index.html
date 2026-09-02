@@ -1079,7 +1079,7 @@ footer{font-size:.88em}
 
 </div><!-- /track-03 -->
 <!-- ===================== TAKEAWAYS ===================== -->
-<section>
+<section id="takeaways">
   <div class="wrap">
     <span class="kicker">Takeaways</span>
     <h2>What to take away</h2>
@@ -1104,7 +1104,7 @@ footer{font-size:.88em}
 </section>
 
 <!-- closing -->
-<div class="divider">
+<div class="divider" id="thanks">
   <div class="wrap">
     <div class="step">Thank you</div>
     <h2>Thank you for listening</h2>
@@ -1402,7 +1402,7 @@ footer{font-size:.88em}
       <button type="button" data-nav="off">Off</button>
       <button type="button" data-nav="on">On</button>
     </div>
-    <div class="settings-note" id="nav-note">Say “next”, “go back”, or a section name to jump there.</div>
+    <div class="settings-note" id="nav-note">Say “next”, “back”, “top”, “end”, “scroll down”, a section name (“SPS survey”, “publications”…), “slide&nbsp;5”, or “open appendix”.</div>
   </div>
   <div class="settings-group">
     <h4>Read-along highlight</h4>
@@ -1758,12 +1758,18 @@ footer{font-size:.88em}
   }
   function go(d){ var i = Math.max(0, Math.min(blocks.length - 1, currentIndex() + d)); scrollToEl(blocks[i]); }
   var named = [
-    { id:'overview', kw:['overview','why use robotics','motivation','opening question'] },
-    { id:'charm',    kw:['charm gui','teleoperation gui','charm facility','charm teleoperation','charm'] },
-    { id:'sps',      kw:['sps survey','sps radiation','radiation survey','sextant','sps ring'] },
-    { id:'lidar',    kw:['non repetitive','lidar mapping','lidar inertial','odometry','nrlio','lidar'] },
-    { id:'appendix', kw:['appendix','extra materials'] }
+    { id:'overview',     kw:['overview','why use robotics','why robotics','motivation','opening question','introduction','intro','the beginning of the talk'] },
+    { id:'contribution', kw:['contributions','contribution','my contribution','my contributions','my work','what i did'] },
+    { id:'charm',        kw:['charm gui','teleoperation gui','charm facility','charm teleoperation','charm intervention','charm section','charmbot'] },
+    { id:'sps',          kw:['sps survey','sps radiation','radiation survey','super proton synchrotron','sextant','sps ring'] },
+    { id:'lidar',        kw:['non repetitive','non-repetitive','lidar mapping','lidar inertial','lidar odometry','lidar section','nrlio'] },
+    { id:'takeaways',    kw:['takeaways','take away','take aways','summary','in summary','conclusion','conclusions','wrap up','key points','key takeaways'] },
+    { id:'thanks',       kw:['thank you','thanks','closing','the end','questions','any questions'] },
+    { id:'publications', kw:['publications','publication','papers','the paper','the papers','references','qr code','qr codes','read the papers','linkedin'] },
+    { id:'appendix',     kw:['appendix','extra materials','backup slides','backup','more detail','additional material'] }
   ];
+  var NUMWORDS = {one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19,twenty:20};
+  var apxBox = document.getElementById('appendix-box');
   function cueFlash(msg){ if(!cue) return; cue.textContent = msg; cue.classList.add('show');
     clearTimeout(cue._t); cue._t = setTimeout(function(){ cue.classList.remove('show'); }, 1200); }
 
@@ -1781,9 +1787,20 @@ footer{font-size:.88em}
   var lastJump = 0;
   function handleCommand(phrase){
     var p = ' ' + phrase.toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim() + ' ';
-    if(/\b(next slide|next section|moving on|move on|go on|next|continue|advance)\b/.test(p)){ go(1); cueFlash('Next ▸'); return true; }
-    if(/\b(previous slide|previous section|go back|last slide|previous|back up|back)\b/.test(p)){ go(-1); cueFlash('◂ Back'); return true; }
-    if(/\b(top|beginning|start over|the start)\b/.test(p)){ window.scrollTo({ top:0, behavior:'smooth' }); cueFlash('Top'); return true; }
+    // appendix open / close
+    if(apxBox && /\b(open|expand|show|reveal)( the)? appendix\b/.test(p)){ apxBox.open = true; var ax = document.getElementById('appendix'); if(ax) scrollToEl(ax); cueFlash('Appendix opened'); return true; }
+    if(apxBox && /\b(close|collapse|hide)( the)? appendix\b/.test(p)){ apxBox.open = false; cueFlash('Appendix closed'); return true; }
+    // jump to a numbered slide: "slide 5", "section three", "go to slide 12"
+    var mn = p.match(/\b(?:slide|section|page)\s+(\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\b/);
+    if(mn){ var n = /^\d/.test(mn[1]) ? parseInt(mn[1],10) : NUMWORDS[mn[1]]; if(n>=1 && n<=blocks.length){ scrollToEl(blocks[n-1]); cueFlash('▸ Slide ' + n); return true; } }
+    // movement
+    if(/\b(next slide|next section|next page|moving on|move on|go on|carry on|keep going|onward|onwards|next|continue|advance|proceed)\b/.test(p)){ go(1); cueFlash('Next ▸'); return true; }
+    if(/\b(previous slide|previous section|previous page|go back|one back|step back|back up|previous|the last slide|back)\b/.test(p)){ go(-1); cueFlash('◂ Back'); return true; }
+    if(/\b(scroll down|down a bit|a bit down|page down|further down)\b/.test(p)){ window.scrollBy({ top: Math.round(window.innerHeight*0.82), behavior:'smooth' }); cueFlash('Scroll ▾'); return true; }
+    if(/\b(scroll up|up a bit|a bit up|page up|further up)\b/.test(p)){ window.scrollBy({ top: -Math.round(window.innerHeight*0.82), behavior:'smooth' }); cueFlash('Scroll ▴'); return true; }
+    if(/\b(go to the top|back to the top|scroll to the top|scroll to top|start over|the very start|first slide|title slide|go home)\b/.test(p)){ window.scrollTo({ top:0, behavior:'smooth' }); cueFlash('⤒ Top'); return true; }
+    if(/\b(go to the end|the very end|final slide|scroll to the bottom|scroll to bottom|jump to the end)\b/.test(p)){ scrollToEl(blocks[blocks.length-1]); cueFlash('⤓ End'); return true; }
+    // named sections
     for(var i = 0; i < named.length; i++){
       for(var j = 0; j < named[i].kw.length; j++){
         if(p.indexOf(' ' + named[i].kw[j] + ' ') >= 0){
@@ -1957,7 +1974,7 @@ footer{font-size:.88em}
   }); });
   navBtns.forEach(function(b){ b.addEventListener('click', function(){
     navOn = b.getAttribute('data-nav') === 'on'; setSeg(navBtns,'data-nav', navOn ? 'on' : 'off');
-    if(navNote) navNote.textContent = navOn ? 'Listening — say “next”, “go back”, or a section name.' : 'Say “next”, “go back”, or a section name to jump there.';
+    if(navNote) navNote.innerHTML = navOn ? 'Listening — “next”, “back”, “top”, “end”, a section name, “slide&nbsp;5”, “open appendix”.' : 'Say “next”, “back”, “top”, “end”, “scroll down”, a section name (“SPS survey”, “publications”…), “slide&nbsp;5”, or “open appendix”.';
     ensure();
   }); });
   readBtns.forEach(function(b){ b.addEventListener('click', function(){
