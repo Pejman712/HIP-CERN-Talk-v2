@@ -428,6 +428,22 @@ figure.contain figcaption{padding:2px 4px 2px}
 /* ---------- takeaways cards ---------- */
 .card .cs{font-weight:500;font-size:14.5px;line-height:1.45;color:var(--card-num);margin-top:10px}
 
+/* ---------- hero QR (scan to open) ---------- */
+.hero-qr{margin-top:30px;display:inline-flex;align-items:center;gap:16px;padding:14px 18px 14px 14px;
+  border:1px solid var(--line);border-radius:var(--radius);background:color-mix(in srgb,var(--bg) 70%,transparent)}
+.hero-qr .qr{flex:0 0 auto;width:92px;height:92px;padding:7px;border-radius:10px;background:#fff;
+  border:1px solid var(--line);box-sizing:border-box}
+.hero-qr .qr img{display:block;width:100%;height:100%}
+.hero-qr .hq-text{font-size:15px;line-height:1.45}
+.hero-qr .hq-text b{display:block;font-size:16px;color:var(--text);margin-bottom:3px}
+.hero-qr .hq-text span{color:var(--muted)}
+@media(max-width:520px){.hero-qr{width:100%}}
+
+/* ---------- single feature photo ---------- */
+figure.solo-photo{max-width:760px;margin:28px auto 4px}
+figure.solo-photo.portrait{max-width:440px}
+figure.solo-photo img{max-height:70vh;object-fit:contain}
+
 /* ---------- read-along highlight ---------- */
 .ra-w{transition:color .12s ease}
 .ra-w.read{color:#e0242b}
@@ -647,6 +663,10 @@ footer{font-size:.88em}
         <span class="tag">LiDAR Odometry</span>
         <span class="tag">SLAM</span>
       </div>
+      <div class="hero-qr">
+        <span class="qr"><img src="assets/img/qr/site.svg" alt="QR code linking to this presentation website"></span>
+        <span class="hq-text"><b>Follow along on your phone</b><span>Scan to open these slides · pejman712.github.io/HIP-CERN-Talk-v2</span></span>
+      </div>
       <a class="scrollcue" href="#overview">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
         Scroll to explore
@@ -668,6 +688,10 @@ footer{font-size:.88em}
       <div class="opt"><span class="k">D</span>Optimal operation</div>
     </div>
     <p class="quiz-hint" id="quiz-hint">Correct — <b>radiation protection</b>. Keeping people out of high-dose areas is the primary driver for robotics at CERN.</p>
+    <figure class="contain solo-photo">
+      <img src="assets/img/intro.jpg" alt="Presenter walking an inspection robot across a CERN service yard" loading="lazy">
+      <figcaption>Moving an inspection robot between CERN facilities during a survey campaign</figcaption>
+    </figure>
   </div>
 </section>
 
@@ -884,6 +908,10 @@ footer{font-size:.88em}
       <figure class="contain"><img src="assets/img/p10-001.jpg" alt="Facility map with target area and charging station">
         <figcaption>Route from the charging station to the target area</figcaption></figure>
     </div>
+    <figure class="contain solo-photo portrait">
+      <img src="assets/img/charmtest.jpg" alt="Presenter teleoperating CHARMBot along a facility corridor with a laptop" loading="lazy">
+      <figcaption>Teleoperating CHARMBot through a service corridor during a mapping run</figcaption>
+    </figure>
   </div>
 </section>
 
@@ -1000,6 +1028,10 @@ footer{font-size:.88em}
     <p class="lead">The colour-coded outlines tie each target location on the SPS ring to a photo of what the robot actually sees there.</p>
     <figure class="contain"><img src="assets/img/slide18-targets.png" alt="Annotated aerial map of the SPS ring linking survey locations to tunnel photos: access points, tunnel arc, Safety Gate 19 and Beam Dump Area BA5" loading="lazy">
       <figcaption><b>Access points</b> (6 in total) · <b>Tunnel arc</b> · <b>Safety Gate 19</b> · <b>Beam Dump Area BA5</b></figcaption></figure>
+    <figure class="contain solo-photo">
+      <img src="assets/img/spstest.jpg" alt="Team preparing the survey robot inside a large SPS beam-dump hall" loading="lazy">
+      <figcaption>Preparing the survey robot on site in an SPS beam-dump area</figcaption>
+    </figure>
   </div>
 </section>
 
@@ -1440,7 +1472,7 @@ footer{font-size:.88em}
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(reduce) return;
   var sel = 'section .kicker, section h2, section .lead, section > .wrap > p:not(.quiz-hint), section ul.bul,'
-          + ' .cards, .figs, .masonry, .collage, .wall, .opts, .metric, .video, .mapscta, .split .stack > *,'
+          + ' .cards, .figs, .masonry, .collage, .wall, .opts, .metric, .video, .mapscta, .split .stack > *, section > .wrap > figure.solo-photo,'
           + ' .divider .step, .divider h2, .divider .lead';
   var nodes = Array.prototype.slice.call(document.querySelectorAll(sel));
   nodes.forEach(function(el){ el.classList.add('reveal'); });
